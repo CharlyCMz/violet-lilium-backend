@@ -1,0 +1,22 @@
+# EditorConfig es una herramienta para ayudar a los desarrolladores a mantener estilos de codificación consistentes.
+# Más información: https://editorconfig.org
+
+# Raíz del archivo .editorconfig
+root = true
+
+# Reglas globales para todos los archivos
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Configuración para archivos JavaScript, TypeScript, JSON, y similares
+[*.{js,ts,json}]
+max_line_length = 80
+
+# Regla adicional para archivos de TypeScript
+[*.ts]
+# Aquí podemos agregar más reglas específicas si es necesario
