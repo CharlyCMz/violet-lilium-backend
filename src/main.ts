@@ -17,7 +17,6 @@ async function bootstrap() {
     origin: [
       `${appConfig.get('violetLilium').frontendUrl}`,
       `https://www.violetlilium.com`,
-      'http://localhost:4200',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,

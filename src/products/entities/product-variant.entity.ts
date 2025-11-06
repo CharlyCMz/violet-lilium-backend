@@ -24,6 +24,9 @@ export class ProductVariant {
   sku: string;
 
   @Column({ type: 'numeric', precision: 10, scale: 4 })
+  cost: string;
+
+  @Column({ type: 'numeric', precision: 10, scale: 4 })
   price: string;
 
   @Column({
@@ -35,6 +38,9 @@ export class ProductVariant {
     default: '0',
   })
   discountPrice: string;
+
+  @Column({ type: 'int', default: 0 })
+  stock: number;
 
   @Column({ name: 'is_available', type: 'boolean', default: false })
   isAvailable: boolean;
