@@ -9,6 +9,12 @@ import { ProductVariant } from './entities/product-variant.entity';
 import { Product } from './entities/product.entity';
 import { SubCategory } from './entities/sub-category.entity';
 import { VariantAttribute } from './entities/variant-attribute.entity';
+import { CategoryService } from './services/category.service';
+import { SubCategoryService } from './services/sub-category.service';
+import { CategoryController } from './controllers/category.controller';
+import { SubCategoryController } from './controllers/sub-category.controller';
+import { VariantAttributeController } from './controllers/variant-attribute.controller';
+import { VariantAttributeService } from './services/variant-attribute.service';
 
 @Module({
    imports: [
@@ -22,7 +28,7 @@ import { VariantAttribute } from './entities/variant-attribute.entity';
       SubCategory,
     ]),
   ],
-  providers: [AttributeService],
-  controllers: [AttributeController]
+  providers: [AttributeService, CategoryService, SubCategoryService, VariantAttributeService],
+  controllers: [AttributeController, CategoryController, SubCategoryController, VariantAttributeController]
 })
 export class ProductsModule {}
