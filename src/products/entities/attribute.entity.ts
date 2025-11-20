@@ -3,25 +3,29 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { VariantAttribute } from './variant-attribute.entity';
+import { ProductVariant } from './product-variant.entity';
 
 @Entity({ name: 'attributes' })
 export class Attribute {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 156, unique: true })
-  name: string;
+  @Column({ type: 'varchar', length: 156, unique: false })
+  type: string;
 
-  @OneToMany(
-    () => VariantAttribute,
-    (variantAttribute) => variantAttribute.attribute,
+  @Column({ type: 'varchar', length: 156, unique: false })
+  value: string;
+
+  @ManyToMany(
+    () => ProductVariant,
+    (productVariant) => productVariant.attributes,
   )
-  variantsAttributes: VariantAttribute[];
+  productVariants: ProductVariant[];
 
   @CreateDateColumn({
     name: 'created_at',

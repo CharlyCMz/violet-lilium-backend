@@ -29,8 +29,7 @@ export class AttributeService {
   }
 
   async createEntity(payload: CreateAttributeDTO) {
-    const newAttribute = this.attributeRepository.create(payload);
-    return this.attributeRepository.save(newAttribute);
+    return await this.attributeRepository.save(payload);
   }
 
   async updateEntity(id: string, payload: UpdateAttributeDTO) {

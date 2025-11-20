@@ -1,33 +1,24 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { CreateProductVariantDTO } from './product-variant.dto';
-import { Product } from '../entities/product.entity';
+import { Product, ProductStatus } from '../entities/product.entity';
 
 export class CreateProductDTO {
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
-  readonly name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty()
   readonly brand: string;
 
-  @IsOptional()
-  @IsArray()
-  @ApiProperty({ type: [String], required: false })
-  readonly features?: string[];
-
   @IsNotEmpty()
-  @IsString()
+  @IsEnum(ProductStatus)
   @ApiProperty()
-  readonly description: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty()
-  readonly status: string;
+  readonly status: ProductStatus;
 
   @IsOptional()
   @IsArray()
@@ -35,14 +26,25 @@ export class CreateProductDTO {
   readonly cautions?: string[];
 
   @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly howToUse: string;
+
+  @IsOptional()
   @IsArray()
-  @ApiProperty({ type: [String] })
-  readonly subCategoryIds: string[];
+  @ApiProperty({ type: [String], required: false })
+  readonly cleaningCare?: string[];
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly categoryId: string;
 
   @IsNotEmpty()
   @IsArray()
+  @IsString({ each: true })
   @ApiProperty({ type: [String] })
-  readonly labelIds: string[];
+  readonly subCategoryIds: string[];
 
   @IsNotEmpty()
   @IsArray()

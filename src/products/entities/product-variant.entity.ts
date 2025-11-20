@@ -10,9 +10,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { VariantAttribute } from './variant-attribute.entity';
 import { Product } from './product.entity';
 import { Image } from './image.entity';
+import { Attribute } from './attribute.entity';
 // import { InlineProduct } from 'src/sales/entities/inline-products.entity';
 
 @Entity({ name: 'product_variants' })
@@ -23,20 +23,22 @@ export class ProductVariant {
   @Column({ type: 'varchar', length: 256, unique: true })
   sku: string;
 
-  @Column({ type: 'numeric', precision: 10, scale: 4 })
+  @Column({ type: 'varchar', name: 'name', nullable: false })
+  name: string;
+
+  @Column({ type: 'text', name: 'description', nullable: false })
+  description: string;
+
+  @Column({ type: 'text', name: 'specifications', array: true, nullable: true })
+  specifications: string[];
+
+  @Column({ type: 'numeric', precision: 12, scale: 4 })
   cost: string;
 
-  @Column({ type: 'numeric', precision: 10, scale: 4 })
+  @Column({ type: 'numeric', precision: 12, scale: 4 })
   price: string;
 
-  @Column({
-    name: 'discount_price',
-    type: 'numeric',
-    precision: 10,
-    scale: 4,
-    nullable: true,
-    default: '0',
-  })
+  @Column({ type: 'numeric', precision: 12, scale: 4, default: 0 })
   discountPrice: string;
 
   @Column({ type: 'int', default: 0 })
@@ -45,21 +47,27 @@ export class ProductVariant {
   @Column({ name: 'is_available', type: 'boolean', default: false })
   isAvailable: boolean;
 
+  @Column({ type: 'int', name: 'views', nullable: false, default: 0 })
+  views: number;
+
   @Column({ type: 'int', name: 'total_sales', default: 0 })
   totalSales: number;
 
   @ManyToMany(
-    () => VariantAttribute,
-    (variantAttribute) => variantAttribute.productVariants,
+    () => Attribute,
+    (attribute) => attribute.productVariants,
   )
-  @JoinTable({ name: 'product_variant_variant_attribute' })
-  variantsAttributes: VariantAttribute[];
+  @JoinTable({ name: 'product_variants_attributes' })
+  attributes: Attribute[];
 
   @OneToMany(() => Image, (image) => image.productVariant)
   images: Image[];
 
   @ManyToOne(() => Product, (product) => product.productVariants)
   product: Product;
+
+  @ManyToOne(() => Image, { nullable: true })
+  frontImage: Image;
 
   // @OneToMany(
   //   () => InlineProduct,

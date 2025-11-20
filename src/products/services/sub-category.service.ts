@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { ILike, In, Repository } from 'typeorm';
 import { SubCategory } from '../entities/sub-category.entity';
 import {
   CreateSubCategoryDTO,
@@ -51,6 +51,12 @@ export class SubCategoryService {
       );
     }
     return subCategory;
+  }
+
+  async findManyById(payload: string[]) {
+    return await this.subCategoryRepository.findBy({
+      id: In(payload),
+    });
   }
 
   async createEntity(payload: CreateSubCategoryDTO) {

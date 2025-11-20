@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SubCategory } from './sub-category.entity';
+import { Product } from './product.entity';
 
 @Entity({ name: 'categories' })
 export class Category {
@@ -25,6 +26,9 @@ export class Category {
 
   @OneToMany(() => SubCategory, (subCategory) => subCategory.category)
   subCategories: SubCategory[];
+
+  @OneToMany(() => Product, (product) => product.category)
+  products: Product[];
 
   @CreateDateColumn({
     name: 'created_at',

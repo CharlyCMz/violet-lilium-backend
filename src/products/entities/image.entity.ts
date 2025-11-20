@@ -17,13 +17,12 @@ export class Image {
   @Column({ type: 'varchar', length: 156, unique: false })
   reference: string;
 
-  @Column({ type: 'boolean', name: 'is_front_image', default: false })
-  isFrontImage: boolean;
-
   @Column({ type: 'varchar', length: 1024, unique: true })
   url: string;
 
-  @ManyToOne(() => ProductVariant, (productVariant) => productVariant.images)
+  @ManyToOne(() => ProductVariant, (productVariant) => productVariant.images, {
+    nullable: true,
+  })
   productVariant?: ProductVariant;
 
   @CreateDateColumn({

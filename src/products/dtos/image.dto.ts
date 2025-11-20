@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateImageDTO {
   @IsNotEmpty()
@@ -12,15 +12,10 @@ export class CreateImageDTO {
   @ApiProperty()
   readonly url: string;
 
-  @IsNotEmpty()
-  @IsBoolean()
-  @ApiProperty()
-  readonly isFrontImage: boolean;
-
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty()
-  readonly productVariantId: string;
+  readonly productVariantId?: string;
 }
 
 export class UpdateImageDTO extends PartialType(CreateImageDTO) {}

@@ -8,27 +8,39 @@ import { Image } from './entities/image.entity';
 import { ProductVariant } from './entities/product-variant.entity';
 import { Product } from './entities/product.entity';
 import { SubCategory } from './entities/sub-category.entity';
-import { VariantAttribute } from './entities/variant-attribute.entity';
 import { CategoryService } from './services/category.service';
 import { SubCategoryService } from './services/sub-category.service';
 import { CategoryController } from './controllers/category.controller';
 import { SubCategoryController } from './controllers/sub-category.controller';
-import { VariantAttributeController } from './controllers/variant-attribute.controller';
-import { VariantAttributeService } from './services/variant-attribute.service';
+import { ProductService } from './services/product.service';
+import { ProductVariantService } from './services/product-variant.service';
+import { ImagesService } from './services/images.service';
+import { ProductController } from './controllers/product.controller';
 
 @Module({
-   imports: [
+  imports: [
     TypeOrmModule.forFeature([
       Attribute,
       Category,
       Image,
       ProductVariant,
       Product,
-      VariantAttribute,
       SubCategory,
     ]),
   ],
-  providers: [AttributeService, CategoryService, SubCategoryService, VariantAttributeService],
-  controllers: [AttributeController, CategoryController, SubCategoryController, VariantAttributeController]
+  providers: [
+    AttributeService,
+    CategoryService,
+    SubCategoryService,
+    ProductService,
+    ProductVariantService,
+    ImagesService,
+  ],
+  controllers: [
+    AttributeController,
+    CategoryController,
+    SubCategoryController,
+    ProductController,
+  ],
 })
 export class ProductsModule {}

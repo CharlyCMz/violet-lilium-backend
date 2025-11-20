@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 import { CreateImageDTO } from './image.dto';
 
@@ -14,6 +15,21 @@ export class CreateProductVariantDTO {
   @IsString()
   @ApiProperty()
   readonly sku: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly description: string;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({ type: [String], required: false })
+  readonly specifications: string[];
 
   @IsNotEmpty()
   @IsString()
@@ -40,20 +56,21 @@ export class CreateProductVariantDTO {
   @ApiProperty()
   readonly isAvailable: boolean;
 
-  @IsOptional()
-  @IsNumber()
-  @ApiProperty()
-  readonly productId?: string;
-
   @IsNotEmpty()
   @IsArray()
+  @IsUUID('4', { each: true })
   @ApiProperty({ type: [String] })
-  readonly variantAttributeIds: string[];
+  readonly attributeIds: string[];
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  readonly frontImageId?: string;
 
   @IsOptional()
   @IsArray()
   @ApiProperty({ type: [CreateImageDTO] })
-  readonly images?: CreateImageDTO[];
+  readonly images: CreateImageDTO[];
 }
 
 export class UpdateProductVariantDTO extends PartialType(

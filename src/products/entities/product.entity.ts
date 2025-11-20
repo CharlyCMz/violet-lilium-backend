@@ -8,9 +8,11 @@ import {
   JoinTable,
   ManyToMany,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { SubCategory } from './sub-category.entity';
 import { ProductVariant } from './product-variant.entity';
+import { Category } from './category.entity';
 
 export enum ProductStatus {
   draft = 'Draft',
@@ -22,30 +24,27 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', name: 'name', nullable: false })
-  name: string;
-
   @Column({ type: 'varchar', name: 'brand', nullable: false })
   brand: string;
-
-  @Column({ type: 'text', name: 'description', nullable: false })
-  description: string;
 
   @Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.draft })
   status: ProductStatus;
 
-  @Column({ type: 'text', name: 'features', array: true, nullable: true })
-  features: string[];
-
   @Column({ type: 'text', name: 'cautions', array: true, nullable: true })
   cautions: string[];
 
-  @Column({ type: 'int', name: 'views', nullable: false, default: 0 })
-  views: number;
+  @Column({ type: 'text', name: 'how_to_use', nullable: true })
+  howToUse: string;
+
+  @Column({ type: 'text', name: 'cleaning_care', array: true, nullable: true })
+  cleaningCare: string[];
 
   @ManyToMany(() => SubCategory, (subCategory) => subCategory.products)
   @JoinTable({ name: 'products_sub_categories' })
   subCategories: SubCategory[];
+
+  @ManyToOne(() => Category, (category) => category.products)
+  category: Category;
 
   @OneToMany(() => ProductVariant, (productVariant) => productVariant.product)
   productVariants: ProductVariant[];

@@ -5,7 +5,12 @@ export class CreateAttributeDTO {
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
-  readonly name: string;
+  readonly type: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly value: string;
 }
 
 export class UpdateAttributeDTO extends PartialType(CreateAttributeDTO) {}
