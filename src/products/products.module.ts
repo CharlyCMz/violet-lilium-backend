@@ -16,6 +16,7 @@ import { ProductService } from './services/product.service';
 import { ProductVariantService } from './services/product-variant.service';
 import { ImagesService } from './services/images.service';
 import { ProductController } from './controllers/product.controller';
+import { ProductVariantController } from './controllers/product-variant.controller';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ProductController } from './controllers/product.controller';
     CategoryController,
     SubCategoryController,
     ProductController,
+    ProductVariantController,
   ],
 })
 export class ProductsModule {}

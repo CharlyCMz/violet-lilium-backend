@@ -2,6 +2,7 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -9,6 +10,7 @@ import {
   IsUUID,
 } from 'class-validator';
 import { CreateImageDTO } from './image.dto';
+import { ProductStatus } from '../entities/product.entity';
 
 export class CreateProductVariantDTO {
   @IsNotEmpty()
@@ -76,3 +78,50 @@ export class CreateProductVariantDTO {
 export class UpdateProductVariantDTO extends PartialType(
   CreateProductVariantDTO,
 ) {}
+
+export enum SortBy {
+  Recent = 'createdAt',
+  Popular = 'views',
+  Price = 'price',
+  BestSeller = 'totalSales',
+}
+
+export enum Sort {
+  Asc = 'ASC',
+  Desc = 'DESC',
+}
+
+export class GetProdductVariantFiltersDTO {
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
+  subCategoryId?: string;
+
+  @IsOptional()
+  @IsEnum(ProductStatus)
+  status?: ProductStatus;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  attributeIds?: string[];
+
+  @IsOptional()
+  @IsEnum(Sort)
+  sortBy?: SortBy;
+
+  @IsOptional()
+  @IsEnum(Sort)
+  sort?: Sort;
+
+  @IsOptional()
+  @IsNumber()
+  page?: number;
+
+  @IsOptional()
+  @IsNumber()
+  limit?: number;
+}

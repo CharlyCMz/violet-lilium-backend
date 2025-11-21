@@ -3,16 +3,70 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, Repository } from 'typeorm';
 import { ProductService } from './product.service';
-import { CreateProductVariantDTO } from '../dtos/product-variant.dto';
+import {
+  CreateProductVariantDTO,
+  GetProdductVariantFiltersDTO,
+  Sort,
+  SortBy,
+} from '../dtos/product-variant.dto';
+import { ProductStatus } from '../entities/product.entity';
 
 @Injectable()
 export class ProductVariantService {
-  // constructor(
-  //   @InjectRepository(ProductVariant)
-  //   private productVariantRepository: Repository<ProductVariant>,
-  //   private productService: ProductService,
-  //   //private imageService: ImageService,
-  // ) {}
+  constructor(
+    @InjectRepository(ProductVariant)
+    private productVariantRepository: Repository<ProductVariant>,
+  ) {}
+
+  async findAll(filters: GetProdductVariantFiltersDTO) {
+    const {
+      categoryId,
+      subCategoryId,
+      attributeIds,
+      status = ProductStatus.published,
+      sortBy = SortBy.Recent,
+      sort = Sort.Asc,
+      page = 1,
+      limit = 20,
+    } = filters;
+    const qb = this.productVariantRepository
+      .createQueryBuilder('pv')
+      .leftJoinAndSelect('pv.product', 'product')
+      .leftJoin('product.category', 'category')
+      .leftJoin('product.subCategories', 'subCategories')
+      .leftJoin('pv.attributes', 'attributes')
+      .leftJoin('pv.images', 'images')
+      .leftJoinAndSelect('pv.frontImage', 'frontImage')
+      .distinct(true);
+
+    if (categoryId) {
+      qb.andWhere('product.categoryId = :categoryId', { categoryId });
+    }
+
+    if (subCategoryId) {
+      qb.andWhere('subCategories.id = :subCategoryId', { subCategoryId });
+    }
+
+    if (attributeIds?.length) {
+      qb.andWhere('attributes.id IN (:...attributeIds)', { attributeIds });
+    }
+
+    qb.andWhere('product.status = :status', { status });
+    qb.orderBy(`pv.${sortBy}`, sort.toUpperCase() as 'ASC' | 'DESC');
+    qb.skip((page - 1) * limit).take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page * limit < total,
+      hasPreviousPage: page > 1,
+    };
+  }
 
   // async createEntity(payload: CreateProductVariantDTO) {
   //   let newProductVariant = this.productVariantRepository.create(payload);
