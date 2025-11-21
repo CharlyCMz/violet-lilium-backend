@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ProductVariantService } from '../services/product-variant.service';
-import { CreateProductVariantDTO, GetProdductVariantFiltersDTO } from '../dtos/product-variant.dto';
+import { CreateProductVariantDTO, GetProductVariantFiltersDTO } from '../dtos/product-variant.dto';
 
 @Controller('product-variants')
 export class ProductVariantController {
@@ -12,7 +12,7 @@ export class ProductVariantController {
   // }
 
   @Get()
-  getAllEntity(@Query() filters: GetProdductVariantFiltersDTO) {
+  getAllEntity(@Query() filters: GetProductVariantFiltersDTO) {
     return this.productVariantService.findAll(filters);
   }
 }

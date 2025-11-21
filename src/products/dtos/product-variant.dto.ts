@@ -91,7 +91,7 @@ export enum Sort {
   Desc = 'DESC',
 }
 
-export class GetProdductVariantFiltersDTO {
+export class GetProductVariantFiltersDTO {
   @IsOptional()
   @IsString()
   categoryId?: string;

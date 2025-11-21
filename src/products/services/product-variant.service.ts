@@ -5,7 +5,7 @@ import { In, Repository } from 'typeorm';
 import { ProductService } from './product.service';
 import {
   CreateProductVariantDTO,
-  GetProdductVariantFiltersDTO,
+  GetProductVariantFiltersDTO,
   Sort,
   SortBy,
 } from '../dtos/product-variant.dto';
@@ -18,7 +18,7 @@ export class ProductVariantService {
     private productVariantRepository: Repository<ProductVariant>,
   ) {}
 
-  async findAll(filters: GetProdductVariantFiltersDTO) {
+  async findAll(filters: GetProductVariantFiltersDTO) {
     const {
       categoryId,
       subCategoryId,
