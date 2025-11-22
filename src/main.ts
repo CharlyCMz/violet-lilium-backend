@@ -7,6 +7,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const appConfig = app.get(ConfigService);
+
+  const allowedOrigins = appConfig.get<string[]>('violetLilium.allowedOrigins') || [];
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -14,10 +17,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: [
-      `${appConfig.get('violetLilium').frontendUrl}`,
-      `https://www.violetlilium.com`,
-    ],
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });
