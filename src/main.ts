@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const appConfig = app.get(ConfigService);
 
-  const allowedOrigins = appConfig.get<string[]>('violetLilium.allowedOrigins') || [];
+  const allowedOrigins = appConfig.get<string[]>('violetLilium.allowedOrigins') || ['http://localhost:4200', 'https://violetlilium.com'];
   console.log('==========>', allowedOrigins);
   app.useGlobalPipes(
     new ValidationPipe({
