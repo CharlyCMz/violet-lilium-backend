@@ -9,7 +9,7 @@ async function bootstrap() {
   const appConfig = app.get(ConfigService);
 
   const allowedOrigins = appConfig.get<string[]>('violetLilium.allowedOrigins') || [];
-
+  console.log('==========>', allowedOrigins);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
