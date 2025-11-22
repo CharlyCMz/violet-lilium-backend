@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, Repository } from 'typeorm';
@@ -8,6 +8,7 @@ import {
   GetProductVariantFiltersDTO,
   Sort,
   SortBy,
+  UpdateProductVariantDTO,
 } from '../dtos/product-variant.dto';
 import { ProductStatus } from '../entities/product.entity';
 
@@ -66,6 +67,17 @@ export class ProductVariantService {
       hasNextPage: page * limit < total,
       hasPreviousPage: page > 1,
     };
+  }
+
+  async updateEntity(id: string, payload: UpdateProductVariantDTO) {
+    const variant = await this.productVariantRepository.findOneBy({ id });
+    if (!variant) {
+      throw new NotFoundException(
+        `The ProductVariant with ID: ${id} was Not Found`,
+      );
+    }
+    this.productVariantRepository.merge(variant, payload);
+    return this.productVariantRepository.save(variant);
   }
 
   // async createEntity(payload: CreateProductVariantDTO) {

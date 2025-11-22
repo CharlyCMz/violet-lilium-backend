@@ -1,6 +1,10 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ProductVariantService } from '../services/product-variant.service';
-import { CreateProductVariantDTO, GetProductVariantFiltersDTO } from '../dtos/product-variant.dto';
+import {
+  CreateProductVariantDTO,
+  GetProductVariantFiltersDTO,
+  UpdateProductVariantDTO,
+} from '../dtos/product-variant.dto';
 
 @Controller('product-variants')
 export class ProductVariantController {
@@ -14,5 +18,13 @@ export class ProductVariantController {
   @Get()
   getAllEntity(@Query() filters: GetProductVariantFiltersDTO) {
     return this.productVariantService.findAll(filters);
+  }
+
+  @Put(':id')
+  updateEntity(
+    @Param('id') id: string,
+    @Body() payload: UpdateProductVariantDTO,
+  ) {
+    return this.productVariantService.updateEntity(id, payload);
   }
 }
