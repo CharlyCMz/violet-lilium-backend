@@ -20,6 +20,11 @@ export class ProductVariantController {
     return this.productVariantService.findAll(filters);
   }
 
+  @Get(':id')
+  getOneEntity(@Param('id') id: string) {
+    return this.productVariantService.findOne(id);
+  }
+
   @Put(':id')
   updateEntity(
     @Param('id') id: string,

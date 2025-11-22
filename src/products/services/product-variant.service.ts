@@ -69,6 +69,16 @@ export class ProductVariantService {
     };
   }
 
+  async findOne(id: string) {
+    const variant = await this.productVariantRepository.findOneBy({ id });
+    if (!variant) {
+      throw new NotFoundException(
+        `The ProductVariant with ID: ${id} was Not Found`,
+      );
+    }
+    return variant;
+  }
+
   async updateEntity(id: string, payload: UpdateProductVariantDTO) {
     const variant = await this.productVariantRepository.findOneBy({ id });
     if (!variant) {
@@ -77,7 +87,7 @@ export class ProductVariantService {
       );
     }
     this.productVariantRepository.merge(variant, payload);
-    return this.productVariantRepository.save(variant);
+    return await this.productVariantRepository.save(variant);
   }
 
   // async createEntity(payload: CreateProductVariantDTO) {
