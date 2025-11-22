@@ -70,7 +70,10 @@ export class ProductVariantService {
   }
 
   async findOne(id: string) {
-    const variant = await this.productVariantRepository.findOneBy({ id });
+    const variant = await this.productVariantRepository.findOne({
+      relations: ['product', 'frontImage', 'attributes'],
+      where: { id },
+    });
     if (!variant) {
       throw new NotFoundException(
         `The ProductVariant with ID: ${id} was Not Found`,
