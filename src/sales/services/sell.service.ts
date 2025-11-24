@@ -32,7 +32,7 @@ export class SellService {
         }
 
         await manager.update(ProductVariant, variant.id, {
-          totalSales: () => '"totalSales" + ' + inlineProduct.quantity,
+          totalSales: () => '"total_sales" + ' + inlineProduct.quantity,
           stock: () => '"stock" - ' + inlineProduct.quantity,
         });
 
