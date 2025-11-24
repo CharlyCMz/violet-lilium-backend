@@ -15,6 +15,8 @@ export class ProductService {
   constructor(
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    @InjectRepository(ProductVariant)
+    private productVariantRepository: Repository<ProductVariant>,
     private dataSource: DataSource,
   ) {}
 
@@ -25,6 +27,15 @@ export class ProductService {
     });
     if (!product)
       throw new NotFoundException(`Product with ID "${id}" not found`);
+
+    const ids = product.productVariants.map((v) => v.id);
+    await this.productVariantRepository
+      .createQueryBuilder()
+      .update()
+      .set({ views: () => '"views" + 1' })
+      .whereInIds(ids)
+      .execute();
+
     return product;
   }
 
