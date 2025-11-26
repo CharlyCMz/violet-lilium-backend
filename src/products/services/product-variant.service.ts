@@ -11,6 +11,7 @@ import {
   UpdateProductVariantDTO,
 } from '../dtos/product-variant.dto';
 import { ProductStatus } from '../entities/product.entity';
+import { Category } from '../entities/category.entity';
 
 @Injectable()
 export class ProductVariantService {
@@ -96,6 +97,15 @@ export class ProductVariantService {
       );
     }
     return variant;
+  }
+
+  async relatedProducts(id: string) {
+    return await this.productVariantRepository.find({
+      relations: ['product', 'frontImage', 'attributes'],
+      where: {},
+      order: { totalSales: 'DESC' },
+      take: 5,
+    });
   }
 
   async updateEntity(id: string, payload: UpdateProductVariantDTO) {

@@ -29,10 +29,10 @@ export class ProductService {
       throw new NotFoundException(`Product with ID "${id}" not found`);
 
     await this.productVariantRepository
-      .createQueryBuilder('pv')
-      .update()
+      .createQueryBuilder('')
+      .update(ProductVariant)
       .set({ views: () => '"views" + 1' })
-      .where('pv.id = :variantId', { variantId })
+      .where('id = :variantId', { variantId })
       .execute();
 
     return product;

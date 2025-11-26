@@ -35,6 +35,11 @@ export class ProductVariantController {
     return this.productVariantService.findOne(id);
   }
 
+  @Get(':categoryId/related')
+  getRelatedProducts(@Param('categoryId') categoryId: string) {
+    return this.productVariantService.relatedProducts(categoryId);
+  }
+
   @Put(':id')
   updateEntity(
     @Param('id') id: string,
