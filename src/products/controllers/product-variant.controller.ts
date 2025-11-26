@@ -25,6 +25,11 @@ export class ProductVariantController {
     return this.productVariantService.topSales();
   }
 
+  @Get('most-popular')
+  getMostPopular() {
+    return this.productVariantService.mostPopular();
+  }
+
   @Get(':id')
   getOneEntity(@Param('id') id: string) {
     return this.productVariantService.findOne(id);

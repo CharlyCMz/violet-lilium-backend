@@ -20,7 +20,7 @@ export class ProductService {
     private dataSource: DataSource,
   ) {}
 
-  async findOne(id: string, relations: string[] = []) {
+  async findOne(id: string, variantId: string, relations: string[] = []) {
     const product = await this.productRepository.findOne({
       where: { id },
       relations,
@@ -28,12 +28,11 @@ export class ProductService {
     if (!product)
       throw new NotFoundException(`Product with ID "${id}" not found`);
 
-    const ids = product.productVariants.map((v) => v.id);
     await this.productVariantRepository
-      .createQueryBuilder()
+      .createQueryBuilder('pv')
       .update()
       .set({ views: () => '"views" + 1' })
-      .whereInIds(ids)
+      .where('pv.id = :variantId', { variantId })
       .execute();
 
     return product;
