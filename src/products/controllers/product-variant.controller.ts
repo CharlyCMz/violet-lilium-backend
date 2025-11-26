@@ -20,6 +20,11 @@ export class ProductVariantController {
     return this.productVariantService.findAll(filters);
   }
 
+  @Get('top-sales')
+  getTopSales() {
+    return this.productVariantService.topSales();
+  }
+
   @Get(':id')
   getOneEntity(@Param('id') id: string) {
     return this.productVariantService.findOne(id);
