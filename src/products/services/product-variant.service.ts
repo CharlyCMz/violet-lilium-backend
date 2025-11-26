@@ -99,10 +99,10 @@ export class ProductVariantService {
     return variant;
   }
 
-  async relatedProducts(id: string) {
+  async relatedProducts(categoryId: string) {
     return await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
-      where: {},
+      where: { product: { category: { id: categoryId } } },
       order: { totalSales: 'DESC' },
       take: 5,
     });
