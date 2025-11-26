@@ -17,25 +17,44 @@ export class CategoryService {
     });
   }
 
-async findByName(filter: string) {
-  return await this.categoryRepository.findOne({
-    select: ['id', 'title'],
-    where: { title: ILike(`%${filter}%`) },
-  });
-}
-
-async findOne(id: string) {
-  const category = await this.categoryRepository.findOne({
-    where: { id },
-    relations: ['subCategories'],
-  });
-
-  if (!category) {
-    throw new NotFoundException(`The Category with ID: ${id} was Not Found`);
+  async featuredCategories() {
+    return await this.categoryRepository
+      .createQueryBuilder('category')
+      .leftJoin('category.products', 'product')
+      .leftJoin('product.productVariants', 'variant')
+      .select('category.id', 'id')
+      .addSelect('category.title', 'title')
+      .addSelect('category.description', 'description')
+      .addSelect('category.imageUrl', 'imageUrl')
+      .addSelect('SUM(variant.total_sales)', 'totalSales')
+      .groupBy('category.id')
+      .addGroupBy('category.title')
+      .addGroupBy('category.description')
+      .addGroupBy('category.imageUrl')
+      .orderBy('"totalSales"', 'DESC')
+      .limit(5)
+      .getRawMany();
   }
 
-  return category;
-}
+  async findByName(filter: string) {
+    return await this.categoryRepository.findOne({
+      select: ['id', 'title'],
+      where: { title: ILike(`%${filter}%`) },
+    });
+  }
+
+  async findOne(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: ['subCategories'],
+    });
+
+    if (!category) {
+      throw new NotFoundException(`The Category with ID: ${id} was Not Found`);
+    }
+
+    return category;
+  }
 
   async findOneNoRelations(id: string) {
     const category = await this.categoryRepository.findOneBy({ id });

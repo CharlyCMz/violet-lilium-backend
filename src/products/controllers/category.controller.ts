@@ -29,6 +29,12 @@ export class CategoryController {
     return this.categoryService.findAll();
   }
 
+  @Get('featured')
+  // @Public()
+  featuredCategories() {
+    return this.categoryService.featuredCategories();
+  }
+
   @Get(':id')
   // @Public()
   findOne(@Param('id') id: string) {
