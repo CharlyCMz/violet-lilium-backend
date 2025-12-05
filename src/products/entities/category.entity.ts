@@ -24,6 +24,9 @@ export class Category {
   @Column({ type: 'varchar', name: 'image_url', nullable: true })
   imageUrl: string;
 
+  @Column({ type: 'int', name: 'view_order', nullable: true })
+  viewOrder: number;
+
   @OneToMany(() => SubCategory, (subCategory) => subCategory.category)
   subCategories: SubCategory[];
 
