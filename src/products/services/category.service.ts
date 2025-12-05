@@ -14,6 +14,7 @@ export class CategoryService {
   async findAll() {
     return await this.categoryRepository.find({
       relations: ['subCategories'],
+      order: { viewOrder: 'ASC' },
     });
   }
 
