@@ -115,6 +115,9 @@ export class ProductVariantService {
         `The ProductVariant with ID: ${id} was Not Found`,
       );
     }
+    if (typeof payload.stock === 'number') {
+      variant.isAvailable = payload.stock > 0;
+    }
     this.productVariantRepository.merge(variant, payload);
     return await this.productVariantRepository.save(variant);
   }
