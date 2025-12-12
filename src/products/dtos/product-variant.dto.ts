@@ -3,11 +3,13 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Min,
 } from 'class-validator';
 import { CreateImageDTO } from './image.dto';
 import { ProductStatus } from '../entities/product.entity';
@@ -50,6 +52,8 @@ export class CreateProductVariantDTO {
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(0, { message: 'Stock cannot be negative' })
+  @IsInt()
   @ApiProperty()
   readonly stock: number;
 
