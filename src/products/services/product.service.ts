@@ -9,6 +9,7 @@ import { ProductVariant } from '../entities/product-variant.entity';
 import { Image } from '../entities/image.entity';
 import { DataSource } from 'typeorm';
 import { Attribute } from '../entities/attribute.entity';
+import { CreateProductVariantDTO } from '../dtos/product-variant.dto';
 
 @Injectable()
 export class ProductService {
@@ -86,17 +87,17 @@ export class ProductService {
           }
 
           if (pv.images?.length > 0) {
-            const images: Image[] = [];
-            for (const img of pv.images) {
-              const newImg = manager.create(Image, {
+            const images = pv.images.map((img) =>
+              manager.create(Image, {
                 ...img,
                 productVariant: variant,
-              });
-              images.push(await manager.save(Image, newImg));
-            }
+              }),
+            );
+
+            const savedImages = await manager.save(Image, images);
 
             await manager.update(ProductVariant, variant.id, {
-              frontImage: images[0],
+              frontImage: savedImages[0],
             });
           }
         }
@@ -159,6 +160,49 @@ export class ProductService {
           'productVariants.frontImage',
         ],
       });
+    });
+  }
+
+  async addNewProductVariant(id: string, payload: CreateProductVariantDTO) {
+    return await this.dataSource.transaction(async (manager) => {
+      const product = await manager.findOne(Product, {
+        where: { id },
+      });
+      if (!product) {
+        throw new NotFoundException(`Product with ID "${id}" not found`);
+      }
+      let variant = manager.create(ProductVariant, {
+        ...payload,
+        product,
+      });
+
+      variant = await manager.save(ProductVariant, variant);
+
+      if (payload.attributeIds?.length > 0) {
+        const attributes = await manager.findBy(Attribute, {
+          id: In(payload.attributeIds as string[]),
+        });
+        if (attributes.length !== payload.attributeIds.length) {
+          throw new NotFoundException(
+            `One or more variant attributes not found`,
+          );
+        }
+        variant.attributes = attributes;
+        await manager.save(ProductVariant, variant);
+      }
+
+      if (payload.images?.length > 0) {
+        const images = payload.images.map((img) =>
+          manager.create(Image, { ...img, productVariant: variant }),
+        );
+
+        await manager.save(Image, images);
+
+        await manager.update(ProductVariant, variant.id, {
+          frontImage: images[0],
+        });
+      }
+      return variant;
     });
   }
 
