@@ -17,7 +17,7 @@ export class Image {
   @Column({ type: 'varchar', length: 156, unique: false })
   reference: string;
 
-  @Column({ type: 'varchar', length: 1024, unique: true })
+  @Column({ type: 'varchar', length: 1024, unique: false })
   url: string;
 
   @ManyToOne(() => ProductVariant, (productVariant) => productVariant.images, {
