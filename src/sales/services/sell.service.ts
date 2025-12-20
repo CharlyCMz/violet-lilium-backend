@@ -49,8 +49,6 @@ export class SellService {
             isAvailable: false,
           });
         }
-
-        return 'Sell registered on DB.';
       }
     });
   }
