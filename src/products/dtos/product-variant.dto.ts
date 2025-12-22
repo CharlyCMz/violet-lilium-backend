@@ -122,10 +122,12 @@ export class GetProductVariantFiltersDTO {
   sort?: Sort;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   page?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   limit?: number;
 }

@@ -8,12 +8,17 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const appConfig = app.get(ConfigService);
 
-  const allowedOrigins = appConfig.get<string[]>('violetLilium.frontendUrl') || [];
+  const allowedOrigins =
+    appConfig.get<string[]>('violetLilium.frontendUrl') || [];
 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
   app.enableCors({
