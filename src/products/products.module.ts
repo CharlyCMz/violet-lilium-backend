@@ -19,6 +19,7 @@ import { ProductController } from './controllers/product.controller';
 import { ProductVariantController } from './controllers/product-variant.controller';
 import { ProductGuideService } from './services/product-guide.service';
 import { ProductGuideController } from './controllers/product-guide.controller';
+import { ProductGuide } from './entities/product-guide.entity';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ProductGuideController } from './controllers/product-guide.controller';
       ProductVariant,
       Product,
       SubCategory,
+      ProductGuide
     ]),
   ],
   providers: [
