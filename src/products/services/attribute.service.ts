@@ -11,8 +11,8 @@ export class AttributeService {
     private attributeRepository: Repository<Attribute>,
   ) {}
 
-  findAll() {
-    return this.attributeRepository.find({
+  async findAll() {
+    return await this.attributeRepository.find({
       relations: ['variantsAttributes'],
     });
   }

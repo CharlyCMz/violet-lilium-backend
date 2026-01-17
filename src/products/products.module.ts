@@ -17,6 +17,8 @@ import { ProductVariantService } from './services/product-variant.service';
 import { ImagesService } from './services/images.service';
 import { ProductController } from './controllers/product.controller';
 import { ProductVariantController } from './controllers/product-variant.controller';
+import { ProductGuideService } from './services/product-guide.service';
+import { ProductGuideController } from './controllers/product-guide.controller';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { ProductVariantController } from './controllers/product-variant.controll
     ProductService,
     ProductVariantService,
     ImagesService,
+    ProductGuideService,
   ],
   controllers: [
     AttributeController,
@@ -43,6 +46,7 @@ import { ProductVariantController } from './controllers/product-variant.controll
     SubCategoryController,
     ProductController,
     ProductVariantController,
+    ProductGuideController,
   ],
 })
 export class ProductsModule {}
