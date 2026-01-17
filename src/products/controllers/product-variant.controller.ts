@@ -30,6 +30,11 @@ export class ProductVariantController {
     return this.productVariantService.mostPopular();
   }
 
+  @Get('new-arrivals')
+  getNewArrivals() {
+    return this.productVariantService.newArrivals();
+  }
+
   @Get(':id')
   getOneEntity(@Param('id') id: string) {
     return this.productVariantService.findOne(id);

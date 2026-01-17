@@ -86,6 +86,14 @@ export class ProductVariantService {
     });
   }
 
+  async newArrivals() {
+    return await this.productVariantRepository.find({
+      relations: ['product', 'frontImage', 'attributes'],
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+  }
+
   async findOne(id: string) {
     const variant = await this.productVariantRepository.findOne({
       relations: ['product', 'frontImage', 'attributes'],
