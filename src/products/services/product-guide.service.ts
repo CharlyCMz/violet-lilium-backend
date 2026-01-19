@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ProductGuide } from '../entities/product-guide.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
@@ -13,6 +13,8 @@ export class ProductGuideService {
   constructor(
     @InjectRepository(ProductGuide)
     private productGuideRepository: Repository<ProductGuide>,
+    @InjectRepository(Image)
+    private imageRepository: Repository<Image>,
     private dataSource: DataSource,
   ) {}
 
@@ -33,9 +35,6 @@ export class ProductGuideService {
     return productGuide;
   }
 
-  // async createEntity(payload: CreateProductGuideDTO) {
-  //   return await this.productGuideRepository.save(payload);
-  // }
   async createEntity(payload: CreateProductGuideDTO) {
     return await this.dataSource.transaction(async (manager) => {
       const images = await manager.find(Image, {
@@ -48,20 +47,38 @@ export class ProductGuideService {
       guide = await manager.save(ProductGuide, guide);
       return await manager.findOne(ProductGuide, {
         where: { id: guide.id },
-        relations: ['images']
+        relations: ['images'],
       });
     });
   }
 
   async updateEntity(id: string, payload: UpdateProductGuideDTO) {
-    const productGuide = await this.productGuideRepository.findOneBy({ id });
+    const productGuide = await this.productGuideRepository.findOne({
+      where: { id },
+      relations: ['images'],
+    });
+
     if (!productGuide) {
       throw new NotFoundException(
         `The ProductGuide with ID: ${id} was Not Found`,
       );
     }
-    //TODO: Update images - Add or Remove
-    this.productGuideRepository.merge(productGuide, payload);
+
+    if (payload.imageIds) {
+      const images = await this.imageRepository.find({
+        where: { id: In(payload.imageIds) },
+      });
+
+      if (images.length !== payload.imageIds.length) {
+        throw new BadRequestException('One or more images were not found');
+      }
+
+      productGuide.images = images;
+    }
+
+    const { imageIds, ...rest } = payload;
+    this.productGuideRepository.merge(productGuide, rest);
+
     return await this.productGuideRepository.save(productGuide);
   }
 
