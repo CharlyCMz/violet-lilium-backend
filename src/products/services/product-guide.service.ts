@@ -19,7 +19,9 @@ export class ProductGuideService {
   ) {}
 
   async findAll() {
-    return await this.productGuideRepository.find();
+    return await this.productGuideRepository.find({
+      relations: ['images']
+    });
   }
 
   async findOne(id: string) {
