@@ -40,7 +40,7 @@ export class CreateProductGuideDTO {
   @IsOptional()
   @IsArray()
   @ApiProperty({ type: [String], required: false })
-  readonly images: string[];
+  readonly imageIds: string[];
 }
 
 export class UpdateProductGuideDTO extends PartialType(CreateProductGuideDTO) {}

@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ProductVariant } from './product-variant.entity';
+import { ProductGuide } from './product-guide.entity';
 
 @Entity({ name: 'images' })
 export class Image {
@@ -24,6 +25,11 @@ export class Image {
     nullable: true,
   })
   productVariant?: ProductVariant;
+
+  @ManyToOne(() => ProductGuide, (productGuide) => productGuide.images, {
+    nullable: true,
+  })
+  productGuide?: ProductGuide;
 
   @CreateDateColumn({
     name: 'created_at',

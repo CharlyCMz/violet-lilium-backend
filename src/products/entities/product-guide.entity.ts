@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Image } from './image.entity';
 
 @Entity({ name: 'product_guides' })
 export class ProductGuide {
@@ -33,8 +35,8 @@ export class ProductGuide {
   @Column({ type: 'text', name: 'clean_and_care', array: true, nullable: true })
   cleanAndCare: string[];
 
-  @Column({ type: 'text', name: 'images', array: true, nullable: true })
-  images: string[];
+  @OneToMany(() => Image, (image) => image.productGuide)
+  images: Image[];
 
   @CreateDateColumn({
     name: 'created_at',

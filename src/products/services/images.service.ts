@@ -58,6 +58,7 @@ export class ImagesService {
       }
       newImage.productVariant = productVariant;
     }
+    //create with productGuide
     return await this.imageRepository.save(newImage);
   }
 
@@ -80,6 +81,7 @@ export class ImagesService {
       }
       image.productVariant = productVariant;
     }
+    //Update productGuide
     return await this.imageRepository.save(image);
   }
 
