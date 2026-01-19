@@ -1,16 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Min,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductGuideDTO {
   @IsNotEmpty()
@@ -22,6 +11,11 @@ export class CreateProductGuideDTO {
   @IsString()
   @ApiProperty()
   readonly description: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly shortDescription: string;
 
   @IsOptional()
   @IsArray()

@@ -18,6 +18,9 @@ export class ProductGuide {
   @Column({ type: 'text', name: 'description', nullable: false })
   description: string;
 
+  @Column({ type: 'text', name: 'short_description', default: '' })
+  shortDescription: string;
+
   @Column({ type: 'text', name: 'tests', array: true, nullable: true })
   tests: string[];
 
