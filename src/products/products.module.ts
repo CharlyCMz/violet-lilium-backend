@@ -20,6 +20,7 @@ import { ProductVariantController } from './controllers/product-variant.controll
 import { ProductGuideService } from './services/product-guide.service';
 import { ProductGuideController } from './controllers/product-guide.controller';
 import { ProductGuide } from './entities/product-guide.entity';
+import { ImageController } from './controllers/image.controller';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ProductGuide } from './entities/product-guide.entity';
     ProductController,
     ProductVariantController,
     ProductGuideController,
+    ImageController,
   ],
 })
 export class ProductsModule {}

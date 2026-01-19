@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Image } from '../entities/image.entity';
 import { CreateImageDTO, UpdateImageDTO } from '../dtos/image.dto';
 import { ProductVariant } from '../entities/product-variant.entity';
@@ -14,15 +14,21 @@ export class ImagesService {
     private productVariantRepository: Repository<ProductVariant>,
   ) {}
 
-  findAll() {
-    return this.imageRepository.find({
+  async findAll() {
+    return await this.imageRepository.find({
       relations: ['productVariant'],
       order: { createdAt: 'DESC' },
     });
   }
 
-  findByProductVariantId(productVariantId: string) {
-    return this.imageRepository.find({
+  async findGroup(ids: string[]) {
+    return await this.imageRepository.find({
+    where: { id: In(ids) }
+  });
+  }
+
+  async findByProductVariantId(productVariantId: string) {
+    return await this.imageRepository.find({
       relations: ['productVariant'],
       where: { productVariant: { id: productVariantId } },
     });
