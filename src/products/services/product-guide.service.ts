@@ -25,6 +25,7 @@ export class ProductGuideService {
   async findOne(id: string) {
     const productGuide = await this.productGuideRepository.findOne({
       where: { id },
+      relations: ['images']
     });
 
     if (!productGuide) {
