@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, Repository } from 'typeorm';
-import { ProductService } from './product.service';
 import {
   CreateProductVariantDTO,
   GetProductVariantFiltersDTO,
@@ -12,12 +11,15 @@ import {
 } from '../dtos/product-variant.dto';
 import { ProductStatus } from '../entities/product.entity';
 import { Category } from '../entities/category.entity';
+import { Attribute } from '../entities/attribute.entity';
 
 @Injectable()
 export class ProductVariantService {
   constructor(
     @InjectRepository(ProductVariant)
     private productVariantRepository: Repository<ProductVariant>,
+    @InjectRepository(Attribute)
+    private attributeRepository: Repository<Attribute>,
   ) {}
 
   async findAll(filters: GetProductVariantFiltersDTO) {
@@ -123,10 +125,22 @@ export class ProductVariantService {
         `The ProductVariant with ID: ${id} was Not Found`,
       );
     }
+    this.productVariantRepository.merge(variant, payload);
+
     if (typeof payload.stock === 'number') {
       variant.isAvailable = payload.stock > 0;
     }
-    this.productVariantRepository.merge(variant, payload);
+
+    if (payload.attributeIds && payload.attributeIds.length > 0) {
+      const attributes = await this.attributeRepository.findBy({
+        id: In(payload.attributeIds as string[]),
+      });
+      if (attributes.length !== payload.attributeIds.length) {
+        throw new NotFoundException(`One or more variant attributes not found`);
+      }
+      variant.attributes = attributes;
+    }
+
     return await this.productVariantRepository.save(variant);
   }
 }
