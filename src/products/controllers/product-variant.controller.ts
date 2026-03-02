@@ -20,6 +20,11 @@ export class ProductVariantController {
     return this.productVariantService.findAll(filters);
   }
 
+  @Get('discount')
+  getAllWithDiscount() {
+    return this.productVariantService.findAllWithDiscount();
+  }
+
   @Get('top-sales')
   getTopSales() {
     return this.productVariantService.topSales();

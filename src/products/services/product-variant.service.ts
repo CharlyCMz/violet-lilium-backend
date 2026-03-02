@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
-import { In, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 import {
   CreateProductVariantDTO,
   GetProductVariantFiltersDTO,
@@ -70,6 +70,14 @@ export class ProductVariantService {
       hasNextPage: page * limit < total,
       hasPreviousPage: page > 1,
     };
+  }
+
+  async findAllWithDiscount() {
+    return await this.productVariantRepository.find({
+      relations: ['product', 'frontImage', 'attributes'],
+      where: { discountPrice: MoreThan('0') },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async topSales() {
