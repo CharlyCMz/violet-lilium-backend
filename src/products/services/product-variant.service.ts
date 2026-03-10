@@ -10,7 +10,6 @@ import {
   UpdateProductVariantDTO,
 } from '../dtos/product-variant.dto';
 import { ProductStatus } from '../entities/product.entity';
-import { Category } from '../entities/category.entity';
 import { Attribute } from '../entities/attribute.entity';
 
 @Injectable()
@@ -75,7 +74,10 @@ export class ProductVariantService {
   async findAllWithDiscount() {
     return await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
-      where: { discountPrice: MoreThan('0') },
+      where: {
+        discountPrice: MoreThan('0'),
+        product: { status: ProductStatus.published },
+      },
       order: { createdAt: 'DESC' },
     });
   }
@@ -83,6 +85,7 @@ export class ProductVariantService {
   async topSales() {
     return await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
+      where: { product: { status: ProductStatus.published } },
       order: { totalSales: 'DESC' },
       take: 10,
     });
@@ -91,6 +94,7 @@ export class ProductVariantService {
   async mostPopular() {
     return await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
+      where: { product: { status: ProductStatus.published } },
       order: { views: 'DESC' },
       take: 10,
     });
@@ -99,6 +103,7 @@ export class ProductVariantService {
   async newArrivals() {
     return await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
+      where: { product: { status: ProductStatus.published } },
       order: { createdAt: 'DESC' },
       take: 10,
     });
@@ -120,7 +125,12 @@ export class ProductVariantService {
   async relatedProducts(categoryId: string) {
     return await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
-      where: { product: { category: { id: categoryId } } },
+      where: {
+        product: {
+          category: { id: categoryId },
+          status: ProductStatus.published,
+        },
+      },
       order: { totalSales: 'DESC' },
       take: 5,
     });
