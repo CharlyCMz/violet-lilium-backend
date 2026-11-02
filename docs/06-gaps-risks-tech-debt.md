@@ -10,8 +10,9 @@ before touching the related area. Last updated 2026-02-11.
 - **`synchronize: true` replaced by versioned migrations.** `DatabaseModule` now runs
   `synchronize: false`; baseline migration `BaseSchema1793650044833` (full schema DDL)
   generated under `src/database/migrations/`; CLI datasource at `src/database/data-source.ts`
-  with npm scripts `migration:generate/run/revert/show`. Baseline marked-as-applied on dev;
-  production procedure in [`07-runbook-baseline-prod.md`](07-runbook-baseline-prod.md).
+  with npm scripts `migration:generate/run/revert/show`. Baseline marked-as-applied on dev
+  and on prod (2026-03-10, following [`07-runbook-baseline-prod.md`](07-runbook-baseline-prod.md):
+  pre-deploy `pg_dump` backup, schema-parity gate, INSERT of the baseline record).
 
 **2026-01-25 — runtime bugs (verified fixed):**
 

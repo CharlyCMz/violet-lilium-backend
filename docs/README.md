@@ -55,7 +55,7 @@
 ## Status snapshot
 
 Branch `main`. Feature set: catalog CRUD + product guides + manual sales. Migrations are
-enabled (baseline `BaseSchema1793650044833`, applied on dev; prod pending — see runbook).
+enabled (baseline `BaseSchema1793650044833`, applied on dev and prod — 2026-03-10).
 Actively scaffolded areas with commented-out code signal the next phase: authentication
 (`CustomAuthGuard`, `@Public()` decorator references in comments) and an abandoned
 `InlineProduct`/labels design (comments in entities/DTOs).

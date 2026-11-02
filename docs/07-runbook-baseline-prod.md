@@ -1,8 +1,9 @@
 # 07 — Runbook: Línea base de migraciones en producción
 
 > **Preparado:** 2026-02-11 · Baseline: `BaseSchema1793650044833` (timestamp `1793650044833`)
-> Ejecutar una sola vez por ambiente existente (dev local ya quedó marcado). Ambientes nuevos
-> y vacíos no usan este runbook: ahí basta con `npm run migration:run`.
+> **Estado:** ✅ completado en dev local (2026-02-11) y en producción (2026-03-10).
+> Ejecutar una sola vez por ambiente existente. Ambientes nuevos y vacíos no usan este
+> runbook: ahí basta con `npm run migration:run`.
 
 ## Por qué esto no toca la data
 
