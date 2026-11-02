@@ -35,7 +35,7 @@ export class ImagesService {
   }
 
   async findOne(id: string) {
-    const image = this.imageRepository.findOne({
+    const image = await this.imageRepository.findOne({
       relations: ['productVariant'],
       where: { id },
     });

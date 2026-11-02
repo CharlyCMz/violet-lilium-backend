@@ -116,8 +116,8 @@ Money is `numeric(12,4)` and typed as **`string`** in TS — decimal-safe, never
 - `AppModule` loads it via `ConfigModule.forRoot({ load: [AppConfig], isGlobal: true })`.
 - Consumers use `ConfigService.get('database.host')`-style dot paths (see `DatabaseModule`,
   `main.ts`).
-- The loader depends on `js-yaml`, which is **not declared in `package.json`** — it resolves
-  only as a transitive dependency of `@nestjs/swagger` (see risks doc).
+- The YAML parse depends on `js-yaml`, declared as a direct dependency since 2026-01-25
+  (previously resolved only transitively via `@nestjs/swagger`).
 
 ## Extension points & seams
 

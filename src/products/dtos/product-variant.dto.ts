@@ -114,7 +114,7 @@ export class GetProductVariantFiltersDTO {
   attributeIds?: string[];
 
   @IsOptional()
-  @IsEnum(Sort)
+  @IsEnum(SortBy)
   sortBy?: SortBy;
 
   @IsOptional()

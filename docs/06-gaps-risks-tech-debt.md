@@ -4,6 +4,20 @@ Verified findings from the full scan (2026-01-25), ordered roughly by blast radi
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
 before touching the related area.
 
+## Resolved (2026-01-25)
+
+The four confirmed bugs from the original scan are fixed and verified (`npm ls`, `npm run
+build`, and a boot-time parse of `config.yml` all pass):
+
+- **Phantom `js-yaml` dependency** → declared as a direct dependency (`js-yaml@^5.5.0` +
+  `@types/js-yaml@^4.0.9` in `package.json`). Environments only need `npm i`.
+- **`sortBy` validated against the wrong enum** → `@IsEnum(SortBy)` in
+  `src/products/dtos/product-variant.dto.ts:117`.
+- **`AttributeService.findAll` nonexistent relation** → `productVariants` in
+  `src/products/services/attribute.service.ts:16`.
+- **Missing `await` in `ImagesService.findOne`** → added in
+  `src/products/services/images.service.ts:38`.
+
 ## Security
 
 1. **No authentication/authorization at all.** Every endpoint is public. `AuthModule` is empty;
@@ -20,60 +34,44 @@ before touching the related area.
    production schema from entity metadata on boot. Data-loss risk under drift; there is **no
    migration setup at all**.
 
-## Bugs (confirmed by reading code)
+## Bugs & test debt
 
-5. **Missing declared dependency: `js-yaml`.** `src/config.ts` imports it, but `package.json`
-   does not declare it. It resolves only because `@nestjs/swagger` pulls it in transitively
-   (npm ls confirms: `@nestjs/swagger → js-yaml@4.1.1`). If swagger is ever removed or the
-   tree dedupes differently, the app won't boot. Add it to `dependencies`.
-6. **`GetProductVariantFiltersDTO.sortBy` validates against the wrong enum**
-   (`src/products/dtos/product-variant.dto.ts:117`): `@IsEnum(Sort)` instead of
-   `@IsEnum(SortBy)`. With `forbidNonWhitelisted`, any request passing `?sortBy=createdAt`
-   gets a **400**. The service defaults (`sortBy = Recent`, `sort = Asc`) mask it until someone
-   passes the param.
-7. **`AttributeService.findAll` loads a nonexistent relation**
-   (`src/products/services/attribute.service.ts:16`): `relations: ['variantsAttributes']` —
-   the relation is named `productVariants`. Calling `GET /attributes` throws at runtime.
-8. **`ImagesService.findOne` is missing `await`** (`src/products/services/images.service.ts:38`):
-   checks the Promise (always truthy), so the NotFound guard never fires and it returns a
-   pending Promise. Latent — not currently exposed by a route.
-9. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
+5. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
    the Spanish greeting — `npm test` and `test:e2e` fail out of the box. There is effectively
    **zero real test coverage**.
 
 ## Dead / orphaned code (don't resurrect blindly)
 
-10. **Unwired service methods**: `ProductService.updateEntity` and `ProductService.softDelete`
-    have no controller routes — the product aggregate can only be created/extended/read.
-11. **Unused DTOs**: `banner.dto.ts` (no Banner entity/controller), `search-bar.dto.ts`
-    (references a nonexistent `Label` entity), `PaginatedProductDTO` (defined, never used),
-    `UpdateProductDTO`, `CreateImageDTO.frontImageId` (accepted, ignored), image DTO's
-    `productGuideId` (service code has a `//create with productGuide` TODO and ignores it).
-12. **Commented-out designs**: `InlineProduct` sales entity/relation in `ProductVariant`
-    (`src/products/entities/product-variant.entity.ts:16,72`), `Label` in search DTO,
-    a commented `createEntity` in `ProductVariantController`.
+6. **Unwired service methods**: `ProductService.updateEntity` and `ProductService.softDelete`
+   have no controller routes — the product aggregate can only be created/extended/read.
+7. **Unused DTOs**: `banner.dto.ts` (no Banner entity/controller), `search-bar.dto.ts`
+   (references a nonexistent `Label` entity), `PaginatedProductDTO` (defined, never used),
+   `UpdateProductDTO`, `CreateImageDTO.frontImageId` (accepted, ignored), image DTO's
+   `productGuideId` (service code has a `//create with productGuide` TODO and ignores it).
+8. **Commented-out designs**: `InlineProduct` sales entity/relation in `ProductVariant`
+   (`src/products/entities/product-variant.entity.ts:16,72`), `Label` in search DTO,
+   a commented `createEntity` in `ProductVariantController`.
 
 ## Design inconsistencies
 
-13. **Timestamp type mismatch**: `Product` uses `timestamp`, every other entity `timestamptz`.
-14. **Quasi-polymorphic `Image`**: two nullable owning FKs (`productVariant`, `productGuide`)
+9. **Timestamp type mismatch**: `Product` uses `timestamp`, every other entity `timestamptz`.
+10. **Quasi-polymorphic `Image`**: two nullable owning FKs (`productVariant`, `productGuide`)
     plus being the target of `frontImage`. No constraint enforces "exactly one parent".
-15. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
+11. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
     (`src/products/services/product.service.ts:32`) — crawlers/refreshes pollute popularity.
-16. **Mixed line endings**: `src/sales/*` is CRLF, the rest LF. Also a typo'd filename:
+12. **Mixed line endings**: `src/sales/*` is CRLF, the rest LF. Also a typo'd filename:
     `attibute.controller.ts`.
-17. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
+13. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
     Angular app.
 
 ## Architect's improvement backlog (prioritized)
 
 | # | Item | Why |
 |---|---|---|
-| 1 | Declare `js-yaml`; add a smoke test that boots the app | One-line fix, removes boot fragility |
-| 2 | Fix the two runtime bugs (#6, #7) and the missing `await` (#8) | Known 500s on live endpoints |
-| 3 | Replace `synchronize` with migrations (TypeORM CLI) | Production safety |
-| 4 | Implement `AuthModule` (guard + `@Public`) — the seam is already annotated | Everything is public today |
-| 5 | Move secrets to env vars; keep `config.yml` for non-secret structure | Config hygiene |
-| 6 | Decide the fate of `InlineProduct`/orders vs. manual-sell-only | Dead design is a trap for future edits |
-| 7 | Wire or delete `updateEntity`/`softDelete` + product routes | Half-built aggregate API |
-| 8 | Real tests around transactions and the sell flow | The money path is untested |
+| 1 | Replace `synchronize` with migrations (TypeORM CLI) | Production safety |
+| 2 | Implement `AuthModule` (guard + `@Public`) — the seam is already annotated | Everything is public today |
+| 3 | Move secrets to env vars; keep `config.yml` for non-secret structure | Config hygiene |
+| 4 | Fix the stale specs so the test suite is a usable safety net | Zero real coverage today |
+| 5 | Decide the fate of `InlineProduct`/orders vs. manual-sell-only | Dead design is a trap for future edits |
+| 6 | Wire or delete `updateEntity`/`softDelete` + product routes | Half-built aggregate API |
+| 7 | Real tests around transactions and the sell flow | The money path is untested |

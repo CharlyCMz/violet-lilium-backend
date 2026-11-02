@@ -13,7 +13,7 @@ export class AttributeService {
 
   async findAll() {
     return await this.attributeRepository.find({
-      relations: ['variantsAttributes'],
+      relations: ['productVariants'],
     });
   }
 

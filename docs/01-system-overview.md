@@ -20,7 +20,7 @@ operator/team language is Spanish.
 | Database | PostgreSQL 15 (`pg` 8.16) | Dockerized locally; `synchronize: true` |
 | Validation | class-validator 0.14 + class-transformer | Global pipe, strict whitelist |
 | OpenAPI | `@nestjs/swagger` 11 + swagger-ui-express | UI mounted at `/docs` |
-| Config | `@nestjs/config` 4 + custom YAML loader | `js-yaml` (see risk: phantom dependency) |
+| Config | `@nestjs/config` 4 + custom YAML loader | `config.yml` at repo root |
 | Tests | Jest 30 + ts-jest, supertest | Unit spec + e2e spec, both boilerplate-only |
 | Lint/format | ESLint 9 (typescript-eslint type-checked) + Prettier | `no-explicit-any: off` |
 | Infra | docker-compose (single `postgres:15` service) | Local dev DB, data volume `./postgres_data` |
