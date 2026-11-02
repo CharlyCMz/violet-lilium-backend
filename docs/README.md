@@ -13,13 +13,14 @@
 | What it is | REST API backend for "Violet Lilium", an e-commerce application (adult-products shop) |
 | Architecture | Modular monolith (NestJS feature modules), layered Controller → Service → Repository |
 | Framework | NestJS 11 on Express, TypeScript 5.7 (CommonJS, ES2021) |
-| Persistence | PostgreSQL 15 via TypeORM 0.3 (`synchronize: true`, no migrations) |
+| Persistence | PostgreSQL 15 via TypeORM 0.3 (schema via versioned migrations; baseline `BaseSchema1793650044833`) |
 | Validation | class-validator + global `ValidationPipe` (whitelist, forbidNonWhitelisted, auto-transform) |
 | API docs | Swagger UI at `/docs` |
 | Config | Single YAML file (`config.yml`, repo root), loaded via `@nestjs/config` custom loader |
 | Auth | **Not implemented.** `AuthModule` is an empty placeholder; guards are commented out |
 | Tests | Jest 30 (ts-jest); e2e with supertest. Effectively only boilerplate tests exist |
 | Frontend consumer | Angular SPA (`localhost:4200` dev; `violetlilium.com` prod) via CORS allowlist |
+| Environments | Local dev: Docker Postgres on the dev machine. Production: DigitalOcean droplet with domain |
 
 ## Navigation — what to read for what
 
@@ -32,6 +33,7 @@
 | Build or debug an endpoint, integrate the frontend | [04-api-surface.md](04-api-surface.md) |
 | Write new code that matches the codebase conventions | [05-design-patterns.md](05-design-patterns.md) |
 | Know the landmines before changing something | [06-gaps-risks-tech-debt.md](06-gaps-risks-tech-debt.md) |
+| Apply the production migration baseline / run migrations on prod | [07-runbook-baseline-prod.md](07-runbook-baseline-prod.md) |
 
 ## Mental model in 60 seconds
 
@@ -47,11 +49,13 @@
 - Public catalog reads default to `ProductStatus.Published` and come with home-page
   shortcuts: `discount`, `top-sales`, `most-popular`, `new-arrivals`, `related`.
 - There is **no security layer yet** (no guards, no users table, JWT secret configured but
-  unused) and **no migration strategy** (schema is auto-synchronized from entities).
+  unused). Schema evolution is explicit: versioned TypeORM migrations (`synchronize: false`;
+  production baseline procedure in the runbook).
 
 ## Status snapshot
 
-Branch `main`. Feature set: catalog CRUD + product guides + manual sales. Actively scaffolded
-areas with commented-out code signal the next phase: authentication (`CustomAuthGuard`,
-`@Public()` decorator references in comments) and an abandoned `InlineProduct`/labels design
-(comments in entities/DTOs).
+Branch `main`. Feature set: catalog CRUD + product guides + manual sales. Migrations are
+enabled (baseline `BaseSchema1793650044833`, applied on dev; prod pending — see runbook).
+Actively scaffolded areas with commented-out code signal the next phase: authentication
+(`CustomAuthGuard`, `@Public()` decorator references in comments) and an abandoned
+`InlineProduct`/labels design (comments in entities/DTOs).

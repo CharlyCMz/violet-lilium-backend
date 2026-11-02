@@ -2,12 +2,18 @@
 
 Verified findings from the full scan (2026-01-25), ordered roughly by blast radius. Each entry
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
-before touching the related area.
+before touching the related area. Last updated 2026-02-11.
 
-## Resolved (2026-01-25)
+## Resolved
 
-The four confirmed bugs from the original scan are fixed and verified (`npm ls`, `npm run
-build`, and a boot-time parse of `config.yml` all pass):
+**2026-02-11 — migrations enabled:**
+- **`synchronize: true` replaced by versioned migrations.** `DatabaseModule` now runs
+  `synchronize: false`; baseline migration `BaseSchema1793650044833` (full schema DDL)
+  generated under `src/database/migrations/`; CLI datasource at `src/database/data-source.ts`
+  with npm scripts `migration:generate/run/revert/show`. Baseline marked-as-applied on dev;
+  production procedure in [`07-runbook-baseline-prod.md`](07-runbook-baseline-prod.md).
+
+**2026-01-25 — runtime bugs (verified fixed):**
 
 - **Phantom `js-yaml` dependency** → declared as a direct dependency (`js-yaml@^5.5.0` +
   `@types/js-yaml@^4.0.9` in `package.json`). Environments only need `npm i`.
@@ -30,48 +36,44 @@ build`, and a boot-time parse of `config.yml` all pass):
    mechanism — the file is the only config source, and prod secrets sit beside dev ones.
 3. **No hardening middleware.** No helmet, no rate limiting. CORS is properly allowlisted but
    that's the only defense.
-4. **`synchronize: true`** (`src/database/database.module.ts:19`) — TypeORM auto-mutates the
-   production schema from entity metadata on boot. Data-loss risk under drift; there is **no
-   migration setup at all**.
 
 ## Bugs & test debt
 
-5. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
+4. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
    the Spanish greeting — `npm test` and `test:e2e` fail out of the box. There is effectively
    **zero real test coverage**.
 
 ## Dead / orphaned code (don't resurrect blindly)
 
-6. **Unwired service methods**: `ProductService.updateEntity` and `ProductService.softDelete`
+5. **Unwired service methods**: `ProductService.updateEntity` and `ProductService.softDelete`
    have no controller routes — the product aggregate can only be created/extended/read.
-7. **Unused DTOs**: `banner.dto.ts` (no Banner entity/controller), `search-bar.dto.ts`
+6. **Unused DTOs**: `banner.dto.ts` (no Banner entity/controller), `search-bar.dto.ts`
    (references a nonexistent `Label` entity), `PaginatedProductDTO` (defined, never used),
    `UpdateProductDTO`, `CreateImageDTO.frontImageId` (accepted, ignored), image DTO's
    `productGuideId` (service code has a `//create with productGuide` TODO and ignores it).
-8. **Commented-out designs**: `InlineProduct` sales entity/relation in `ProductVariant`
+7. **Commented-out designs**: `InlineProduct` sales entity/relation in `ProductVariant`
    (`src/products/entities/product-variant.entity.ts:16,72`), `Label` in search DTO,
    a commented `createEntity` in `ProductVariantController`.
 
 ## Design inconsistencies
 
-9. **Timestamp type mismatch**: `Product` uses `timestamp`, every other entity `timestamptz`.
-10. **Quasi-polymorphic `Image`**: two nullable owning FKs (`productVariant`, `productGuide`)
-    plus being the target of `frontImage`. No constraint enforces "exactly one parent".
-11. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
+8. **Timestamp type mismatch**: `Product` uses `timestamp`, every other entity `timestamptz`.
+9. **Quasi-polymorphic `Image`**: two nullable owning FKs (`productVariant`, `productGuide`)
+   plus being the target of `frontImage`. No constraint enforces "exactly one parent".
+10. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
     (`src/products/services/product.service.ts:32`) — crawlers/refreshes pollute popularity.
-12. **Mixed line endings**: `src/sales/*` is CRLF, the rest LF. Also a typo'd filename:
+11. **Mixed line endings**: `src/sales/*` is CRLF, the rest LF. Also a typo'd filename:
     `attibute.controller.ts`.
-13. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
+12. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
     Angular app.
 
 ## Architect's improvement backlog (prioritized)
 
 | # | Item | Why |
 |---|---|---|
-| 1 | Replace `synchronize` with migrations (TypeORM CLI) | Production safety |
-| 2 | Implement `AuthModule` (guard + `@Public`) — the seam is already annotated | Everything is public today |
-| 3 | Move secrets to env vars; keep `config.yml` for non-secret structure | Config hygiene |
-| 4 | Fix the stale specs so the test suite is a usable safety net | Zero real coverage today |
-| 5 | Decide the fate of `InlineProduct`/orders vs. manual-sell-only | Dead design is a trap for future edits |
-| 6 | Wire or delete `updateEntity`/`softDelete` + product routes | Half-built aggregate API |
-| 7 | Real tests around transactions and the sell flow | The money path is untested |
+| 1 | Implement `AuthModule` (guard + `@Public`) — the seam is already annotated | Everything is public today |
+| 2 | Move secrets to env vars; keep `config.yml` for non-secret structure | Config hygiene |
+| 3 | Fix the stale specs so the test suite is a usable safety net | Zero real coverage today |
+| 4 | Decide the fate of `InlineProduct`/orders vs. manual-sell-only | Dead design is a trap for future edits |
+| 5 | Wire or delete `updateEntity`/`softDelete` + product routes | Half-built aggregate API |
+| 6 | Real tests around transactions and the sell flow | The money path is untested |

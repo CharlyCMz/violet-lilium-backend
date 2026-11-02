@@ -17,7 +17,7 @@ operator/team language is Spanish.
 | Language | TypeScript 5.7, target ES2021, CommonJS | `strictNullChecks: true`, **`noImplicitAny: false`** (relaxed typing) |
 | Runtime | Node.js (NestJS 11, Express platform) | Entry: `src/main.ts` |
 | ORM | TypeORM 0.3 (`@nestjs/typeorm` 11) | Repository + QueryBuilder patterns |
-| Database | PostgreSQL 15 (`pg` 8.16) | Dockerized locally; `synchronize: true` |
+| Database | PostgreSQL 15 (`pg` 8.16) | Dockerized locally; schema managed via TypeORM migrations |
 | Validation | class-validator 0.14 + class-transformer | Global pipe, strict whitelist |
 | OpenAPI | `@nestjs/swagger` 11 + swagger-ui-express | UI mounted at `/docs` |
 | Config | `@nestjs/config` 4 + custom YAML loader | `config.yml` at repo root |

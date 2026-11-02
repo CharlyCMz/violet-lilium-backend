@@ -52,7 +52,7 @@ flowchart TD
 | Module | Role | Contents |
 |---|---|---|
 | `AppModule` | Root | Imports everything; global `ConfigModule.forRoot({ load: [AppConfig], isGlobal: true })`; root greeting endpoint |
-| `DatabaseModule` | Infrastructure, `@Global()` | `TypeOrmModule.forRootAsync` reading `database.*` from ConfigService; **exports `TypeOrmModule`** so feature modules never re-import the root connection; entities resolved by glob `__dirname + '/../**/*.entity{.ts,.js}'`; `synchronize: true`, `logging: false` |
+| `DatabaseModule` | Infrastructure, `@Global()` | `TypeOrmModule.forRootAsync` reading `database.*` from ConfigService; **exports `TypeOrmModule`** so feature modules never re-import the root connection; entities resolved by glob `__dirname + '/../**/*.entity{.ts,.js}'`; migrations from `database/migrations`; `synchronize: false`, `logging: false` |
 | `ProductsModule` | Catalog domain | `TypeOrmModule.forFeature([7 entities])`; 7 controllers, 7 services |
 | `SalesModule` | Point of sale | `SellController` + `SellService`; uses `DataSource` directly (no repository injection, no forFeature import) |
 | `AuthModule` | Future auth | **Empty** `@Module({})` — but commented code in controllers references `CustomAuthGuard` and a `@Public()` decorator that don't exist yet |
