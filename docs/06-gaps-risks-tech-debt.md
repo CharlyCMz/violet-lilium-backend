@@ -2,9 +2,26 @@
 
 Verified findings from the full scan (2026-01-25), ordered roughly by blast radius. Each entry
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
-before touching the related area. Last updated 2026-02-11.
+before touching the related area. Last updated 2026-11-03.
 
 ## Resolved
+
+**2026-11-03 — users domain + request hardening (branch `Dev`):**
+- **Users module added** (`src/users/`): `User`, `Role`, `Person`, `DocType`, `Address`,
+  `Location` entities; migration `AddUsersSchema1793696002067` (6 tables; unique constraints
+  on `users.username`, `persons.mail`, `persons.phone`, `roles.name`, and a composite unique
+  index on `locations(country_code, state_code, city_code)`). Idempotent boot seed creates
+  roles `Admin`/`Customer` and doc types CC/CE/NIT/PPT/TI; bootstrap admin is created manually.
+  Verified end-to-end on dev: user creation with bcrypt-hashed password, whole-graph
+  persistence, CSV catalog upload with per-row duplicate rejection.
+- **Locations bulk upload**: `POST /locations/massive-upload` accepts `.csv` (validated by
+  extension or `text/csv` — Windows registers `.csv` as `application/vnd.ms-excel`),
+  auto-detects `,`/`;` delimiter, uppercases `countryCode`; parse failures return 400 instead
+  of an unhandled 500.
+- **Input normalization**: global `TrimStringsPipe` trims every incoming string; `person.mail`
+  is lower-cased and must satisfy `@IsEmail`. **Nested-validation gap fixed in the users
+  chain** (`@ValidateNested()` + `@Type()` on user→person→address — nested payloads were
+  previously transformed but never validated).
 
 **2026-02-11 — migrations enabled:**
 - **`synchronize: true` replaced by versioned migrations.** `DatabaseModule` now runs
@@ -27,11 +44,14 @@ before touching the related area. Last updated 2026-02-11.
 
 ## Security
 
-1. **No authentication/authorization at all.** Every endpoint is public. `AuthModule` is empty;
-   controllers carry only commented-out `@UseGuards(CustomAuthGuard)` / `@Public()` references
-   to files that don't exist (`src/auth/guards/custom-auth.guard.ts`,
-   `src/auth/decorators/public.decorator.ts`). JWT secret already sits unused in `config.yml`.
+1. **No authentication/authorization at all.** Every endpoint is public. The users/roles
+   tables now exist (`UsersModule`, seeded roles + doc types) and the auth dependencies are
+   installed, but `AuthModule` is still an empty placeholder — controllers carry only
+   commented-out `@UseGuards(CustomAuthGuard)` / `@Public()` references to files that don't
+   exist (`src/auth/guards/custom-auth.guard.ts`, `src/auth/decorators/public.decorator.ts`).
+   JWT secret + `jwtExpiresIn` sit configured-but-unused in `config.yml`.
    → Any write endpoint (including `eliminate` hard deletes and manual sells) is exposed.
+   Phase 2 implements JWT login + RBAC guard + global `@Public()` seam.
 2. **Plaintext secrets in the working tree.** `config.yml` holds DB password, JWT secret, and a
    Mailersend-format mailer token. It is gitignored (not committed), but there's no env-var
    mechanism — the file is the only config source, and prod secrets sit beside dev ones.
@@ -43,6 +63,14 @@ before touching the related area. Last updated 2026-02-11.
 4. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
    the Spanish greeting — `npm test` and `test:e2e` fail out of the box. There is effectively
    **zero real test coverage**.
+5. **Unique violations surface as 500.** A duplicate `username`/`mail`/`phone` on `POST /users`
+   hits the DB unique constraint and bubbles up as a generic 500 instead of a 409 with a clear
+   message. **Scheduled next phase** (before customer self-registration exists).
+6. **Nested DTO validation gap (products/sales).** `@ValidateNested()`/`@Type()` are missing
+   on nested/array DTOs outside the users chain — verified on `ManualSellDTO[]`
+   (`PUT /sales/manual-sell`, the money path) and `CreateProductDTO.productVariants[]`:
+   payloads are transformed but not validated. **Scheduled next phase**: same fix applied to
+   the users chain on 2026-11-03.
 
 ## Dead / orphaned code (don't resurrect blindly)
 
@@ -78,3 +106,5 @@ before touching the related area. Last updated 2026-02-11.
 | 4 | Decide the fate of `InlineProduct`/orders vs. manual-sell-only | Dead design is a trap for future edits |
 | 5 | Wire or delete `updateEntity`/`softDelete` + product routes | Half-built aggregate API |
 | 6 | Real tests around transactions and the sell flow | The money path is untested |
+| 7 | Unique-violation → 409 mapping on users creation | Duplicates currently surface as a generic 500 |
+| 8 | `@ValidateNested()`/`@Type()` pass over products/sales DTOs | Same validation gap the users chain had (see bugs #6) |

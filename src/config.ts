@@ -13,6 +13,10 @@ export type AppConfig = {
   violetLilium: {
     port: number;
     jwtSecret: string;
+    jwtExpiresIn: string;
+    bcryptRounds: number;
+    adminUsername: string;
+    adminPassword: string;
   };
   database: {
     username: string;

@@ -43,10 +43,15 @@ flowchart TD
 
     DB -->|exports TypeOrmModule| PS
     DB -->|exports TypeOrmModule| SS
+    DB -->|exports TypeOrmModule| US
     CFG --> DB
 
+    subgraph UsersModule
+        UC[6 controllers] --> US[7 services] --> UE[6 entities]
+    end
+
     AuthM[AuthModule — empty placeholder]
-    UtilM[UtilsModule — empty placeholder]
+    UtilM[UtilsModule<br/>CsvProcessorService]
 ```
 
 | Module | Role | Contents |
@@ -55,8 +60,9 @@ flowchart TD
 | `DatabaseModule` | Infrastructure, `@Global()` | `TypeOrmModule.forRootAsync` reading `database.*` from ConfigService; **exports `TypeOrmModule`** so feature modules never re-import the root connection; entities resolved by glob `__dirname + '/../**/*.entity{.ts,.js}'`; migrations from `database/migrations`; `synchronize: false`, `logging: false` |
 | `ProductsModule` | Catalog domain | `TypeOrmModule.forFeature([7 entities])`; 7 controllers, 7 services |
 | `SalesModule` | Point of sale | `SellController` + `SellService`; uses `DataSource` directly (no repository injection, no forFeature import) |
+| `UsersModule` | Users domain (auth foundation) | `TypeOrmModule.forFeature([6 entities])`; 6 controllers, 7 services (incl. idempotent boot seed for roles/doc-types); exports `PersonService`/`AddressService`/`UserService`; imports `UtilsModule` for the CSV processor |
 | `AuthModule` | Future auth | **Empty** `@Module({})` — but commented code in controllers references `CustomAuthGuard` and a `@Public()` decorator that don't exist yet |
-| `UtilsModule` | Future shared utils | **Empty** `@Module({})` |
+| `UtilsModule` | Shared utils | `CsvProcessorService` (dictionary-based CSV parsing for bulk upload; JSON dictionaries copied to `dist` via `nest-cli.json` assets) |
 
 ## Request lifecycle (create a product — the most complex flow)
 

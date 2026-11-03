@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { TrimStringsPipe } from './utils/pipes/trim-strings.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,7 @@ async function bootstrap() {
     appConfig.get<string[]>('violetLilium.frontendUrl') || [];
 
   app.useGlobalPipes(
+    new TrimStringsPipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -34,6 +36,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
-  await app.listen(appConfig.get('violetLilium').port ?? 3000);
+  await app.listen(appConfig.get<number>('violetLilium.port') ?? 3000);
 }
-bootstrap();
+void bootstrap();

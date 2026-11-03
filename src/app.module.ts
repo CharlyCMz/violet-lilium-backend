@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { ProductsModule } from './products/products.module';
+import { UsersModule } from './users/users.module';
 import { UtilsModule } from './utils/utils.module';
 import { ConfigModule } from '@nestjs/config';
 import { SalesModule } from './sales/sales.module';
@@ -18,6 +19,7 @@ import AppConfig from './config';
     AuthModule,
     DatabaseModule,
     ProductsModule,
+    UsersModule,
     UtilsModule,
     SalesModule,
   ],
