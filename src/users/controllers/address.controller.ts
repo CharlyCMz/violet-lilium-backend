@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { AddressService } from '../services/address.service';
 import { CreateAddressDTO, UpdateAddressDTO } from '../dtos/address.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
+@Roles('Admin')
 @Controller('addresses')
 export class AddressController {
   constructor(private addressService: AddressService) {}

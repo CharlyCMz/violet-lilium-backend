@@ -61,7 +61,7 @@ flowchart TD
 | `ProductsModule` | Catalog domain | `TypeOrmModule.forFeature([7 entities])`; 7 controllers, 7 services |
 | `SalesModule` | Point of sale | `SellController` + `SellService`; uses `DataSource` directly (no repository injection, no forFeature import) |
 | `UsersModule` | Users domain (auth foundation) | `TypeOrmModule.forFeature([6 entities])`; 6 controllers, 7 services (incl. idempotent boot seed for roles/doc-types); exports `PersonService`/`AddressService`/`UserService`; imports `UtilsModule` for the CSV processor |
-| `AuthModule` | Future auth | **Empty** `@Module({})` — but commented code in controllers references `CustomAuthGuard` and a `@Public()` decorator that don't exist yet |
+| `AuthModule` | Auth | JWT login (`POST /auth` → `{accessToken, user}`), `LocalStrategy`/`JwtStrategy`, global `CustomAuthGuard` + `RolesGuard` via `APP_GUARD`; owns `@Public()`/`@Roles()` decorators |
 | `UtilsModule` | Shared utils | `CsvProcessorService` (dictionary-based CSV parsing for bulk upload; JSON dictionaries copied to `dist` via `nest-cli.json` assets) |
 
 ## Request lifecycle (create a product — the most complex flow)

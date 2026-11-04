@@ -9,13 +9,14 @@ especially:
 Quick facts: NestJS 11 + TypeORM + PostgreSQL 15 modular monolith. Catalog CRUD with soft
 delete (`deleteEntity` vs `eliminateEntity` for hard delete). Multi-entity writes go through
 `dataSource.transaction`. Schema evolves via versioned migrations (`synchronize: false`;
-`npm run migration:generate/run/revert/show`). **Auth is not implemented yet** — all endpoints
-are public. The users domain already exists (`src/users/`: User, Role, Person, DocType,
-Address, Location + boot seed of roles/doc-types) as the foundation for JWT auth (deps
-installed; Phase 2). Incoming strings are globally trimmed (`TrimStringsPipe`); `person.mail`
-is lowercased and validated with `@IsEmail`. Bulk city catalog upload:
-`POST /locations/massive-upload` (CSV, comma or semicolon). Config comes from `config.yml`
-(gitignored).
+`npm run migration:generate/run/revert/show`). **Auth (Phase 2, 2026-11-03)**: JWT login at
+`POST /auth` → `{accessToken, user}`; guard chain global vía `APP_GUARD` — `CustomAuthGuard`
+(JWT, salta rutas `@Public()`, verifica que el usuario del token siga existiendo) y luego
+`RolesGuard` (`@Roles('Admin')`; el rol se lee del claim del token). Los GETs del storefront
+son `@Public`; todo lo demás exige token, y los writes + controllers admin exigen rol Admin.
+Incoming strings are globally trimmed (`TrimStringsPipe`); `person.mail` is lowercased and
+validated with `@IsEmail`. Bulk city catalog upload: `POST /locations/massive-upload` (CSV,
+comma or semicolon). Config comes from `config.yml` (gitignored).
 
 The docs were generated from a full source scan on 2026-01-25; if code and docs disagree,
 trust the code and update the docs.

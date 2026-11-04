@@ -33,8 +33,10 @@ async function bootstrap() {
     .setTitle('Violet Lilium Sexshop - API')
     .setDescription('REST API for e-commerce application')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
+  document.security = [{ bearer: [] }];
   SwaggerModule.setup('docs', app, document);
   await app.listen(appConfig.get<number>('violetLilium.port') ?? 3000);
 }

@@ -67,6 +67,15 @@ export class UserService {
     return user;
   }
 
+  async findForAuth(username: string): Promise<User | null> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('user.person', 'person')
+      .where('user.username = :username', { username })
+      .getOne();
+  }
+
   async createEntity(payload: CreateUserDTO) {
     const person = await this.personService.createEntity(payload.person);
     const role = await this.roleService.findOne(payload.roleId);

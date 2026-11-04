@@ -15,6 +15,8 @@ import { LocationService } from '../services/location.service';
 import { CreateLocationDTO, UpdateLocationDTO } from '../dtos/location.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CsvProcessorService } from 'src/utils/csv-processor/csv-processor.service';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('locations')
 export class LocationController {
@@ -24,41 +26,49 @@ export class LocationController {
   ) {}
 
   @Post()
+  @Roles('Admin')
   createEntity(@Body() payload: CreateLocationDTO) {
     return this.locationService.createEntity(payload);
   }
 
   @Get()
+  @Public()
   findAll(@Query('stateName') stateName?: string) {
     return this.locationService.findAll(stateName);
   }
 
   @Get('states')
+  @Public()
   findAllStates() {
     return this.locationService.findAllStates();
   }
 
   @Get(':id')
+  @Roles('Admin')
   findOne(@Param('id') id: string) {
     return this.locationService.findOne(id);
   }
 
   @Put(':id')
+  @Roles('Admin')
   updateEntity(@Param('id') id: string, @Body() payload: UpdateLocationDTO) {
     return this.locationService.updateEntity(id, payload);
   }
 
   @Delete(':id')
+  @Roles('Admin')
   deleteEntity(@Param('id') id: string) {
     return this.locationService.deleteEntity(id);
   }
 
   @Delete('eliminate/:id')
+  @Roles('Admin')
   eliminateEntity(@Param('id') id: string) {
     return this.locationService.eliminateEntity(id);
   }
 
   @Post('massive-upload')
+  @Roles('Admin')
   @UseInterceptors(FileInterceptor('file'))
   async massiveUpload(@UploadedFile() file: Express.Multer.File) {
     const isCsv =

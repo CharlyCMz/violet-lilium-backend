@@ -85,6 +85,25 @@ transactionally; update with `imageIds` **replaces** the image set (unknown ids 
 |---|---|---|
 | PUT | `/sales/manual-sell` | Body: JSON array of `{productVariantSku, quantity}`. Per item, inside **one transaction**: pessimistic write-lock the variant, verify stock, decrement `stock`, increment `total_sales`, flip `isAvailable=false` when stock hits 0. Any failure rolls back everything. Returns 201/empty body on success |
 
+## Auth — `AuthController`
+
+| Method | Path | Behavior |
+|---|---|---|
+| POST | `/auth` | `@Public` + local strategy. Body `{username, password}` → bcrypt compare. Unknown user OR wrong password uniformly **401** (user existence is never leaked). Success → `{accessToken, user}`; JWT HS256 (secret `violetLilium.jwtSecret`, expiry `violetLilium.jwtExpiresIn` = 5d), payload `{sub, username, role}` |
+
+Guards — global, registered in `AuthModule` via `APP_GUARD`, executed in this order:
+
+1. `CustomAuthGuard` (JWT bearer) — skips routes decorated `@Public()`; otherwise validates
+   signature/expiry **and** that `sub` still exists in `users` (deleted user → 401).
+2. `RolesGuard` — enforces `@Roles(...)` metadata against the **role claim of the token**
+   (403 on mismatch). Routes without `@Roles` need only a valid token.
+
+Surface today: storefront GETs (`categories`, `sub-categories`, `attributes`, `locations`
+list + states, `doc-types`, `product-variants`, `product-guides`, product detail) are
+`@Public`; everything else requires a valid token, and all writes plus the admin controllers
+(`users`, `roles`, `persons`, `addresses`) require `@Roles('Admin')`. Swagger (`/docs`) has a
+global bearer requirement — use the Authorize button with a login token.
+
 ## Users domain — `UsersModule`
 
 Standard CRUD set on each controller: `users`, `roles`, `persons`, `doc-types`, `addresses`,

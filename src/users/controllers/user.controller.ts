@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDTO, UpdateUserDTO } from '../dtos/user.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
+@Roles('Admin')
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}

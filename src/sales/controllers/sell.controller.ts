@@ -2,7 +2,9 @@ import { Body, Controller, Put } from '@nestjs/common';
 import { SellService } from '../services/sell.service';
 import { ManualSellDTO } from '../dtos/manual-sell.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
+@Roles('Admin')
 @Controller('sales')
 export class SellController {
   constructor(private sellService: SellService) {}

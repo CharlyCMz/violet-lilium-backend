@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { PersonService } from '../services/person.service';
 import { CreatePersonDTO, UpdatePersonDTO } from '../dtos/person.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
+@Roles('Admin')
 @Controller('persons')
 export class PersonController {
   constructor(private personService: PersonService) {}

@@ -6,6 +6,18 @@ before touching the related area. Last updated 2026-11-03.
 
 ## Resolved
 
+**2026-11-03 — authentication & authorization (branch `Dev`, Phase 2):**
+- **JWT auth**: `POST /auth` (local strategy + bcrypt; uniform 401 for unknown user or wrong
+  password — no user-existence leak; returns `{accessToken, user}`). JWT HS256, 5d expiry from
+  `violetLilium.jwtExpiresIn`, payload `{sub, username, role}`.
+- **Global guard chain** (`APP_GUARD`, order matters): `CustomAuthGuard` skips `@Public()`
+  routes, else validates the bearer token AND that `sub` still exists in `users`;
+  `RolesGuard` enforces `@Roles(...)` against the token role claim (403). Storefront GETs are
+  `@Public`; all writes + admin controllers require `@Roles('Admin')`. Verified on dev with a
+  20-case matrix: 401 (no/bad/ghost token, bad credentials), 403 (role mismatch), 200/201
+  (public reads, admin writes), cleanup. The role is read from the signed token, not from the
+  DB user, so a Customer-claim token cannot escalate even if the underlying user is Admin.
+
 **2026-11-03 — users domain + request hardening (branch `Dev`):**
 - **Users module added** (`src/users/`): `User`, `Role`, `Person`, `DocType`, `Address`,
   `Location` entities; migration `AddUsersSchema1793696002067` (6 tables; unique constraints
@@ -44,18 +56,10 @@ before touching the related area. Last updated 2026-11-03.
 
 ## Security
 
-1. **No authentication/authorization at all.** Every endpoint is public. The users/roles
-   tables now exist (`UsersModule`, seeded roles + doc types) and the auth dependencies are
-   installed, but `AuthModule` is still an empty placeholder — controllers carry only
-   commented-out `@UseGuards(CustomAuthGuard)` / `@Public()` references to files that don't
-   exist (`src/auth/guards/custom-auth.guard.ts`, `src/auth/decorators/public.decorator.ts`).
-   JWT secret + `jwtExpiresIn` sit configured-but-unused in `config.yml`.
-   → Any write endpoint (including `eliminate` hard deletes and manual sells) is exposed.
-   Phase 2 implements JWT login + RBAC guard + global `@Public()` seam.
-2. **Plaintext secrets in the working tree.** `config.yml` holds DB password, JWT secret, and a
+1. **Plaintext secrets in the working tree.** `config.yml` holds DB password, JWT secret, and a
    Mailersend-format mailer token. It is gitignored (not committed), but there's no env-var
    mechanism — the file is the only config source, and prod secrets sit beside dev ones.
-3. **No hardening middleware.** No helmet, no rate limiting. CORS is properly allowlisted but
+2. **No hardening middleware.** No helmet, no rate limiting. CORS is properly allowlisted but
    that's the only defense.
 
 ## Bugs & test debt
