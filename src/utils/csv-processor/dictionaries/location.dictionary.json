@@ -1,0 +1,8 @@
+{
+  "CityCode": "cityCode",
+  "CityName": "city",
+  "StateCode": "stateCode",
+  "StateName": "state",
+  "CountryCode": "countryCode",
+  "CountryName": "country"
+}

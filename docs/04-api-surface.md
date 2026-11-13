@@ -85,6 +85,45 @@ transactionally; update with `imageIds` **replaces** the image set (unknown ids 
 |---|---|---|
 | PUT | `/sales/manual-sell` | Body: JSON array of `{productVariantSku, quantity}`. Per item, inside **one transaction**: pessimistic write-lock the variant, verify stock, decrement `stock`, increment `total_sales`, flip `isAvailable=false` when stock hits 0. Any failure rolls back everything. Returns 201/empty body on success |
 
+## Auth — `AuthController`
+
+| Method | Path | Behavior |
+|---|---|---|
+| POST | `/auth` | `@Public` + local strategy. Body `{username, password}` → bcrypt compare. Unknown user OR wrong password uniformly **401** (user existence is never leaked). Success → `{accessToken, user}`; JWT HS256 (secret `violetLilium.jwtSecret`, expiry `violetLilium.jwtExpiresIn` = 5d), payload `{sub, username, role}` |
+
+Guards — global, registered in `AuthModule` via `APP_GUARD`, executed in this order:
+
+1. `CustomAuthGuard` (JWT bearer) — skips routes decorated `@Public()`; otherwise validates
+   signature/expiry **and** that `sub` still exists in `users` (deleted user → 401).
+2. `RolesGuard` — enforces `@Roles(...)` metadata against the **role claim of the token**
+   (403 on mismatch). Routes without `@Roles` need only a valid token.
+
+Surface today: storefront GETs (`categories`, `sub-categories`, `attributes`, `locations`
+list + states, `doc-types`, `product-variants`, `product-guides`, product detail) are
+`@Public`; everything else requires a valid token, and all writes plus the admin controllers
+(`users`, `roles`, `persons`, `addresses`) require `@Roles('Admin')`. Swagger (`/docs`) has a
+global bearer requirement — use the Authorize button with a login token.
+
+## Users domain — `UsersModule`
+
+Standard CRUD set on each controller: `users`, `roles`, `persons`, `doc-types`, `addresses`,
+`locations` (`POST/GET`, `GET/PUT/DELETE :id`, `DELETE /eliminate/:id`). Creating a `user`
+persists the whole graph person → address (with location resolution); passwords are
+bcrypt-hashed and `@Exclude`d from responses.
+
+| Method | Path | Behavior |
+|---|---|---|
+| GET | `/locations?stateName=` | City catalog, optionally filtered by department |
+| GET | `/locations/states` | Distinct department names |
+| POST | `/locations/massive-upload` | Multipart `file` (.csv). Headers `CityCode,CityName,StateCode,StateName,CountryCode,CountryName`; delimiter auto-detected (`,` or `;`); `countryCode` normalized to uppercase. Duplicates on the composite `(country, state, city)` unique index are rejected per-row, not fatal. Response: `{total, processed, rejected, rejectedProducts[]}` |
+
+Boot seed (idempotent): roles `Admin`/`Customer`, doc types `CC`/`CE`/`NIT`/`PPT`/`TI`. The
+bootstrap admin is created manually via `POST /users` (no auth yet to protect it).
+
+Input normalization: a global `TrimStringsPipe` trims every incoming string; `person.mail` is
+lower-cased and must satisfy `@IsEmail()`. Nested payloads in the users chain are validated
+(`@ValidateNested()` + `@Type()`).
+
 ## DTO quick reference
 
 | DTO | Used by | Key fields |
@@ -97,5 +136,14 @@ transactionally; update with `imageIds` **replaces** the image set (unknown ids 
 | `GetProductVariantFiltersDTO` | GET /product-variants | see table above |
 | `CreateProductGuideDTO` | product-guides | guideName, description, shortDescription, tests[], howToUse[], expectations, cleanAndCare[], imageIds[] |
 | `ManualSellDTO` | sales | productVariantSku, quantity |
+| `CreateUserDTO` | users | username, password, person (CreatePersonDTO), roleId |
+| `CreatePersonDTO` | nested in user DTOs | docTypeId, document, name, midname, lastname1, lastname2, mail (valid email, lower-cased), phone, address (CreateAddressDTO) |
+| `CreateAddressDTO` | nested in person DTOs | street, reference, suite?, zipCode?, isBilling, isShipping, locationId, personId? |
+| `CreateLocationDTO` | locations / massive-upload rows | countryCode (upper-cased), countryName, stateCode, stateName, cityCode, cityName, isActive? (default true) |
+
+All incoming strings are globally trimmed (`TrimStringsPipe` in `main.ts`); `person.mail` is
+additionally lower-cased and validated with `@IsEmail`. Nested DTOs validate only where
+`@ValidateNested()` + `@Type()` are present (users chain today — see risks doc for the gap in
+products/sales).
 
 All `Update*` DTOs are `PartialType(Create…DTO)`. Money fields arrive as **strings**.

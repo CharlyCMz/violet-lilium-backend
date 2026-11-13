@@ -1,6 +1,7 @@
 # 03 — Domain Model
 
-All entities live in `src/products/entities/`. Every table shares the same housekeeping
+Catalog entities live in `src/products/entities/`; the users domain (6 entities, added
+2026-11-03) lives in `src/users/entities/`. Every table shares the same housekeeping
 convention:
 
 - `id` — `@PrimaryGeneratedColumn('uuid')`
@@ -23,6 +24,11 @@ erDiagram
     PRODUCT_VARIANTS ||--o{ IMAGES : "1:N  gallery"
     PRODUCT_VARIANTS }o--o| IMAGES : "N:0..1  front_image"
     PRODUCT_GUIDES ||--o{ IMAGES : "1:N  illustrates"
+    ROLES ||--o{ USERS : "1:N  grants"
+    PERSONS ||--|| USERS : "1:1  account for"
+    DOCUMENTATION_TYPES ||--o{ PERSONS : "1:N  classifies"
+    PERSONS ||--o{ ADDRESSES : "1:N  has"
+    LOCATIONS ||--o{ ADDRESSES : "1:N  locates"
 ```
 
 ## Entity catalog
@@ -104,6 +110,39 @@ varchar(1024).
 Editorial buying guides (tests, how-to, expectations, care). Columns: `guide_name`,
 `description`, `short_description` (default `''`), `tests` text[], `how_to_use` text[],
 `expectations` text, `clean_and_care` text[]; `1:N` → `Image`.
+
+### `documentation_types` — `src/users/entities/doc-type.entity.ts`
+
+Identity document types (seeded: CC, CE, NIT, PPT, TI). Columns: `code` varchar(10), `name`
+varchar(48); `1:N` → `Person`.
+
+### `roles` — `src/users/entities/role.entity.ts`
+
+Account roles (seeded: `Admin`, `Customer`). `name` unique, `description` text;
+`1:N` → `User`.
+
+### `persons` — `src/users/entities/person.entity.ts`
+
+Natural-person data. `docType` (N:1), `document` varchar(10), `name`/`middle_name`/
+`lastname_1`/`lastname_2`, `mail` (unique, lower-cased, `@IsEmail`-validated), `phone`
+(unique); `1:N` → `Address`.
+
+### `users` — `src/users/entities/user.entity.ts`
+
+Login account. `username` unique, `password` (bcrypt hash, `@Exclude`d from responses),
+`person` (1:1, required — `@JoinColumn` on `personId`), `role` (N:1, required). Soft-deletable.
+
+### `locations` — `src/users/entities/location.entity.ts`
+
+City catalog (Colombia loaded first). `country_code`/`country_name`, `state_code`/`state_name`,
+`city_code`/`city_name`; `is_active` boolean default true (per-city enable/disable). Unique
+composite index on `(country_code, state_code, city_code)` — catalog re-uploads reject
+duplicates per row instead of failing. Bulk load: `POST /locations/massive-upload`.
+
+### `addresses` — `src/users/entities/address.entity.ts`
+
+Person address. `street`, `reference`, `suite`, `zip_code`, `is_billing`/`is_shipping` flags
+(both default false); `N:1` → `Location`, `N:1` → `Person`.
 
 ## Domain rules worth knowing
 

@@ -2,9 +2,57 @@
 
 Verified findings from the full scan (2026-01-25), ordered roughly by blast radius. Each entry
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
-before touching the related area. Last updated 2026-02-11.
+before touching the related area. Last updated 2026-11-13.
 
 ## Resolved
+
+**2026-11-13 — friendly conflicts + nested validation (branch `Dev`):**
+- **Unique violations → 409.** Global `TypeormExceptionFilter` (`APP_FILTER` in
+  `src/app.module.ts`, lives in `src/utils/filters/`) maps Postgres `23505` to a 409 with a
+  parsed message (`The value (jcardonac) for (username) already exists`, works for composite
+  keys too — locations, persons). Other `QueryFailedError`s get a sanitized 500 (no SQL leak).
+  Applies to every write endpoint (users, roles, persons, categories, sub-categories,
+  product-variants SKUs, locations), not just `POST /users`.
+- **No more orphan persons on failed user creation.** `UserService.createEntity` rolls back
+  the created person (addresses first, then hard delete) if the user save fails, and looks up
+  the role before creating anything — previously a duplicate username left a committed
+  person/address behind, consuming the unique `mail`/`phone`.
+- **Nested DTO validation closed (products/sales).** `@ValidateNested()` + `@Type()` on
+  `CreateProductDTO.productVariants[]` and `CreateProductVariantDTO.images[]`;
+  `PUT /sales/manual-sell` validates each array item via `ParseArrayPipe` (array body contract
+  unchanged). Verified 400s with per-item paths (`productVariants.0.sku should not be empty`).
+- **`person.document` length guard.** Column is `varchar(10)`; `@MaxLength(10)` on the DTO now
+  turns the `22001 value too long` 500 into a clear 400. If real-world documents need more
+  than 10 chars, widen the column via migration and relax the decorator (see #13 below).
+
+**2026-11-03 — authentication & authorization (branch `Dev`, Phase 2):**
+- **JWT auth**: `POST /auth` (local strategy + bcrypt; uniform 401 for unknown user or wrong
+  password — no user-existence leak; returns `{accessToken, user}`). JWT HS256, 5d expiry from
+  `violetLilium.jwtExpiresIn`, payload `{sub, username, role}`.
+- **Global guard chain** (`APP_GUARD`, order matters): `CustomAuthGuard` skips `@Public()`
+  routes, else validates the bearer token AND that `sub` still exists in `users`;
+  `RolesGuard` enforces `@Roles(...)` against the token role claim (403). Storefront GETs are
+  `@Public`; all writes + admin controllers require `@Roles('Admin')`. Verified on dev with a
+  20-case matrix: 401 (no/bad/ghost token, bad credentials), 403 (role mismatch), 200/201
+  (public reads, admin writes), cleanup. The role is read from the signed token, not from the
+  DB user, so a Customer-claim token cannot escalate even if the underlying user is Admin.
+
+**2026-11-03 — users domain + request hardening (branch `Dev`):**
+- **Users module added** (`src/users/`): `User`, `Role`, `Person`, `DocType`, `Address`,
+  `Location` entities; migration `AddUsersSchema1793696002067` (6 tables; unique constraints
+  on `users.username`, `persons.mail`, `persons.phone`, `roles.name`, and a composite unique
+  index on `locations(country_code, state_code, city_code)`). Idempotent boot seed creates
+  roles `Admin`/`Customer` and doc types CC/CE/NIT/PPT/TI; bootstrap admin is created manually.
+  Verified end-to-end on dev: user creation with bcrypt-hashed password, whole-graph
+  persistence, CSV catalog upload with per-row duplicate rejection.
+- **Locations bulk upload**: `POST /locations/massive-upload` accepts `.csv` (validated by
+  extension or `text/csv` — Windows registers `.csv` as `application/vnd.ms-excel`),
+  auto-detects `,`/`;` delimiter, uppercases `countryCode`; parse failures return 400 instead
+  of an unhandled 500.
+- **Input normalization**: global `TrimStringsPipe` trims every incoming string; `person.mail`
+  is lower-cased and must satisfy `@IsEmail`. **Nested-validation gap fixed in the users
+  chain** (`@ValidateNested()` + `@Type()` on user→person→address — nested payloads were
+  previously transformed but never validated).
 
 **2026-02-11 — migrations enabled:**
 - **`synchronize: true` replaced by versioned migrations.** `DatabaseModule` now runs
@@ -27,15 +75,10 @@ before touching the related area. Last updated 2026-02-11.
 
 ## Security
 
-1. **No authentication/authorization at all.** Every endpoint is public. `AuthModule` is empty;
-   controllers carry only commented-out `@UseGuards(CustomAuthGuard)` / `@Public()` references
-   to files that don't exist (`src/auth/guards/custom-auth.guard.ts`,
-   `src/auth/decorators/public.decorator.ts`). JWT secret already sits unused in `config.yml`.
-   → Any write endpoint (including `eliminate` hard deletes and manual sells) is exposed.
-2. **Plaintext secrets in the working tree.** `config.yml` holds DB password, JWT secret, and a
+1. **Plaintext secrets in the working tree.** `config.yml` holds DB password, JWT secret, and a
    Mailersend-format mailer token. It is gitignored (not committed), but there's no env-var
    mechanism — the file is the only config source, and prod secrets sit beside dev ones.
-3. **No hardening middleware.** No helmet, no rate limiting. CORS is properly allowlisted but
+2. **No hardening middleware.** No helmet, no rate limiting. CORS is properly allowlisted but
    that's the only defense.
 
 ## Bugs & test debt
@@ -67,6 +110,10 @@ before touching the related area. Last updated 2026-02-11.
     `attibute.controller.ts`.
 12. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
     Angular app.
+13. **`persons.document` is `varchar(10)`** — fits Colombian CC/NIT digits, but passports and
+    foreign docs can exceed it. The DTO `@MaxLength(10)` currently rejects those with a 400;
+    if the business needs longer documents, widen the column via migration and relax the
+    decorator together.
 
 ## Architect's improvement backlog (prioritized)
 

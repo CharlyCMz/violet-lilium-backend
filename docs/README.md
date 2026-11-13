@@ -17,7 +17,7 @@
 | Validation | class-validator + global `ValidationPipe` (whitelist, forbidNonWhitelisted, auto-transform) |
 | API docs | Swagger UI at `/docs` |
 | Config | Single YAML file (`config.yml`, repo root), loaded via `@nestjs/config` custom loader |
-| Auth | **Not implemented.** `AuthModule` is an empty placeholder; guards are commented out |
+| Auth | **Implemented (Phase 2, 2026-11-03).** JWT login `POST /auth` → `{accessToken, user}`; global guard chain (`@Public()` seam + `@Roles('Admin')` RBAC); catalog GETs public, writes admin-only |
 | Tests | Jest 30 (ts-jest); e2e with supertest. Effectively only boilerplate tests exist |
 | Frontend consumer | Angular SPA (`localhost:4200` dev; `violetlilium.com` prod) via CORS allowlist |
 | Environments | Local dev: Docker Postgres on the dev machine. Production: DigitalOcean droplet with domain |
@@ -37,10 +37,12 @@
 
 ## Mental model in 60 seconds
 
-- One NestJS app, six modules: root `AppModule`, global `DatabaseModule`, `ProductsModule`
-  (the whole catalog — 7 entities/services/controllers), `SalesModule` (stock decrement),
-  and two empty placeholders (`AuthModule`, `UtilsModule`).
-- Everything is CRUD over 7 TypeORM entities, all UUID-keyed, all **soft-deletable**
+- One NestJS app: root `AppModule`, global `DatabaseModule`, `ProductsModule` (the whole
+  catalog — 7 entities/services/controllers), `SalesModule` (stock decrement), `UsersModule`
+  (users, roles, persons, doc types, addresses, locations — the auth foundation),
+  `UtilsModule` (CSV processor for bulk upload, pipes), and the still-empty `AuthModule`
+  placeholder.
+- Everything is CRUD over 13 TypeORM entities, all UUID-keyed, all **soft-deletable**
   (`deleted_at` via `@DeleteDateColumn`). Hard delete is a separate, deliberately-named
   `eliminate` operation.
 - Multi-entity writes run inside `dataSource.transaction(...)`. Counters (`views`,
@@ -48,14 +50,17 @@
   additionally takes a **pessimistic write lock**.
 - Public catalog reads default to `ProductStatus.Published` and come with home-page
   shortcuts: `discount`, `top-sales`, `most-popular`, `new-arrivals`, `related`.
-- There is **no security layer yet** (no guards, no users table, JWT secret configured but
-  unused). Schema evolution is explicit: versioned TypeORM migrations (`synchronize: false`;
+- Auth: JWT (5d) via `POST /auth`; a global guard chain protects everything except `@Public`
+  storefront GETs, and `@Roles('Admin')` restricts writes + admin controllers. Schema evolution
+  is explicit: versioned TypeORM migrations (`synchronize: false`;
   production baseline procedure in the runbook).
 
 ## Status snapshot
 
-Branch `main`. Feature set: catalog CRUD + product guides + manual sales. Migrations are
-enabled (baseline `BaseSchema1793650044833`, applied on dev and prod — 2026-03-10).
+Branch `Dev`. Feature set: catalog CRUD + product guides + manual sales + users domain
+(users, roles, persons, doc-types, addresses, locations with CSV bulk upload and boot seed).
+Migrations: baseline `BaseSchema1793650044833` (applied on dev and prod — 2026-03-10) plus
+`AddUsersSchema1793696002067` (applied on dev — 2026-11-03).
 Actively scaffolded areas with commented-out code signal the next phase: authentication
 (`CustomAuthGuard`, `@Public()` decorator references in comments) and an abandoned
 `InlineProduct`/labels design (comments in entities/DTOs).
