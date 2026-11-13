@@ -71,6 +71,10 @@ export class AddressService {
     return this.addressRepository.softDelete(id);
   }
 
+  async eliminateByPersonId(personId: string) {
+    return this.addressRepository.delete({ person: { id: personId } });
+  }
+
   async eliminateEntity(id: string) {
     const exist = await this.addressRepository.findOneBy({ id });
     if (!exist) {

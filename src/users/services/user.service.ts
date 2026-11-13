@@ -77,15 +77,20 @@ export class UserService {
   }
 
   async createEntity(payload: CreateUserDTO) {
-    const person = await this.personService.createEntity(payload.person);
     const role = await this.roleService.findOne(payload.roleId);
-    const newUser = this.userRepository.create(payload);
-    const bcryptRounds =
-      this.configService.get<number>('violetLilium.bcryptRounds') ?? 10;
-    newUser.password = await bcrypt.hash(payload.password, bcryptRounds);
-    newUser.person = person;
-    newUser.role = role;
-    return this.userRepository.save(newUser);
+    const person = await this.personService.createEntity(payload.person);
+    try {
+      const newUser = this.userRepository.create(payload);
+      const bcryptRounds =
+        this.configService.get<number>('violetLilium.bcryptRounds') ?? 10;
+      newUser.password = await bcrypt.hash(payload.password, bcryptRounds);
+      newUser.person = person;
+      newUser.role = role;
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      await this.personService.rollbackCreated(person.id);
+      throw error;
+    }
   }
 
   async updateEntity(id: string, payload: UpdateUserDTO) {

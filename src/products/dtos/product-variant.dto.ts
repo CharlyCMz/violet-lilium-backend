@@ -1,4 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -10,6 +11,7 @@ import {
   IsString,
   IsUUID,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { CreateImageDTO } from './image.dto';
 import { ProductStatus } from '../entities/product.entity';
@@ -75,6 +77,8 @@ export class CreateProductVariantDTO {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateImageDTO)
   @ApiProperty({ type: [CreateImageDTO] })
   readonly images: CreateImageDTO[];
 }

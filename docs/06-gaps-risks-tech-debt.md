@@ -2,9 +2,28 @@
 
 Verified findings from the full scan (2026-01-25), ordered roughly by blast radius. Each entry
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
-before touching the related area. Last updated 2026-11-03.
+before touching the related area. Last updated 2026-11-13.
 
 ## Resolved
+
+**2026-11-13 — friendly conflicts + nested validation (branch `Dev`):**
+- **Unique violations → 409.** Global `TypeormExceptionFilter` (`APP_FILTER` in
+  `src/app.module.ts`, lives in `src/utils/filters/`) maps Postgres `23505` to a 409 with a
+  parsed message (`The value (jcardonac) for (username) already exists`, works for composite
+  keys too — locations, persons). Other `QueryFailedError`s get a sanitized 500 (no SQL leak).
+  Applies to every write endpoint (users, roles, persons, categories, sub-categories,
+  product-variants SKUs, locations), not just `POST /users`.
+- **No more orphan persons on failed user creation.** `UserService.createEntity` rolls back
+  the created person (addresses first, then hard delete) if the user save fails, and looks up
+  the role before creating anything — previously a duplicate username left a committed
+  person/address behind, consuming the unique `mail`/`phone`.
+- **Nested DTO validation closed (products/sales).** `@ValidateNested()` + `@Type()` on
+  `CreateProductDTO.productVariants[]` and `CreateProductVariantDTO.images[]`;
+  `PUT /sales/manual-sell` validates each array item via `ParseArrayPipe` (array body contract
+  unchanged). Verified 400s with per-item paths (`productVariants.0.sku should not be empty`).
+- **`person.document` length guard.** Column is `varchar(10)`; `@MaxLength(10)` on the DTO now
+  turns the `22001 value too long` 500 into a clear 400. If real-world documents need more
+  than 10 chars, widen the column via migration and relax the decorator (see #13 below).
 
 **2026-11-03 — authentication & authorization (branch `Dev`, Phase 2):**
 - **JWT auth**: `POST /auth` (local strategy + bcrypt; uniform 401 for unknown user or wrong
@@ -67,14 +86,6 @@ before touching the related area. Last updated 2026-11-03.
 4. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
    the Spanish greeting — `npm test` and `test:e2e` fail out of the box. There is effectively
    **zero real test coverage**.
-5. **Unique violations surface as 500.** A duplicate `username`/`mail`/`phone` on `POST /users`
-   hits the DB unique constraint and bubbles up as a generic 500 instead of a 409 with a clear
-   message. **Scheduled next phase** (before customer self-registration exists).
-6. **Nested DTO validation gap (products/sales).** `@ValidateNested()`/`@Type()` are missing
-   on nested/array DTOs outside the users chain — verified on `ManualSellDTO[]`
-   (`PUT /sales/manual-sell`, the money path) and `CreateProductDTO.productVariants[]`:
-   payloads are transformed but not validated. **Scheduled next phase**: same fix applied to
-   the users chain on 2026-11-03.
 
 ## Dead / orphaned code (don't resurrect blindly)
 
@@ -99,6 +110,10 @@ before touching the related area. Last updated 2026-11-03.
     `attibute.controller.ts`.
 12. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
     Angular app.
+13. **`persons.document` is `varchar(10)`** — fits Colombian CC/NIT digits, but passports and
+    foreign docs can exceed it. The DTO `@MaxLength(10)` currently rejects those with a 400;
+    if the business needs longer documents, widen the column via migration and relax the
+    decorator together.
 
 ## Architect's improvement backlog (prioritized)
 
@@ -110,5 +125,3 @@ before touching the related area. Last updated 2026-11-03.
 | 4 | Decide the fate of `InlineProduct`/orders vs. manual-sell-only | Dead design is a trap for future edits |
 | 5 | Wire or delete `updateEntity`/`softDelete` + product routes | Half-built aggregate API |
 | 6 | Real tests around transactions and the sell flow | The money path is untested |
-| 7 | Unique-violation → 409 mapping on users creation | Duplicates currently surface as a generic 500 |
-| 8 | `@ValidateNested()`/`@Type()` pass over products/sales DTOs | Same validation gap the users chain had (see bugs #6) |

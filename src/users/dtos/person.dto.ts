@@ -1,6 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 import { CreateAddressDTO } from './address.dto';
 
 export class CreatePersonDTO {
@@ -11,6 +17,7 @@ export class CreatePersonDTO {
 
   @IsNotEmpty()
   @IsString()
+  @MaxLength(10)
   @ApiProperty()
   readonly document: string;
 

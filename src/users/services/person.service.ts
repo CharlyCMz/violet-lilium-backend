@@ -59,6 +59,11 @@ export class PersonService {
     return await this.findOne(newPerson.id);
   }
 
+  async rollbackCreated(id: string) {
+    await this.addressService.eliminateByPersonId(id);
+    await this.personRepository.delete(id);
+  }
+
   async updateEntity(id: string, payload: UpdatePersonDTO) {
     const person = await this.personRepository.findOneBy({ id });
     if (!person) {

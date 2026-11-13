@@ -16,7 +16,9 @@ delete (`deleteEntity` vs `eliminateEntity` for hard delete). Multi-entity write
 son `@Public`; todo lo demás exige token, y los writes + controllers admin exigen rol Admin.
 Incoming strings are globally trimmed (`TrimStringsPipe`); `person.mail` is lowercased and
 validated with `@IsEmail`. Bulk city catalog upload: `POST /locations/massive-upload` (CSV,
-comma or semicolon). Config comes from `config.yml` (gitignored).
+comma or semicolon). Config comes from `config.yml` (gitignored). DB unique violations return
+**409** via the global `TypeormExceptionFilter` (`src/utils/filters/`); failed `POST /users`
+rolls back the created person (no orphans).
 
 The docs were generated from a full source scan on 2026-01-25; if code and docs disagree,
 trust the code and update the docs.

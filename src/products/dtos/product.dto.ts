@@ -1,10 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 import { CreateProductVariantDTO } from './product-variant.dto';
 import { Product, ProductStatus } from '../entities/product.entity';
@@ -48,6 +50,8 @@ export class CreateProductDTO {
 
   @IsNotEmpty()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductVariantDTO)
   @ApiProperty({ type: [CreateProductVariantDTO] })
   readonly productVariants: CreateProductVariantDTO[];
 }
