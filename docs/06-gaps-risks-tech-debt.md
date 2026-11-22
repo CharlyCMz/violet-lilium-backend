@@ -2,7 +2,7 @@
 
 Verified findings from the full scan (2026-01-25), ordered roughly by blast radius. Each entry
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
-before touching the related area. Last updated 2026-11-13.
+before touching the related area. Last updated 2026-11-22.
 
 ## Resolved
 
@@ -104,8 +104,10 @@ before touching the related area. Last updated 2026-11-13.
 8. **Timestamp type mismatch**: `Product` uses `timestamp`, every other entity `timestamptz`.
 9. **Quasi-polymorphic `Image`**: two nullable owning FKs (`productVariant`, `productGuide`)
    plus being the target of `frontImage`. No constraint enforces "exactly one parent".
-10. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
-    (`src/products/services/product.service.ts:32`) — crawlers/refreshes pollute popularity.
+10. **Side-effecting GETs**: `GET /products/:id/variant/:variantId` increments `views`
+    (`src/products/services/product.service.ts:32`), and so does
+    `GET /product-variants/by-slug/:variantSlug` (deliberate, branch
+    `feature/product-variant-slugs`) — crawlers/refreshes pollute popularity.
 11. **Mixed line endings**: `src/sales/*` is CRLF, the rest LF. Also a typo'd filename:
     `attibute.controller.ts`.
 12. **No API prefix/versioning** — any future versioning will be a breaking URL change for the

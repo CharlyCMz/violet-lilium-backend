@@ -1,8 +1,10 @@
 # 08 — Product Variant Slugs (design contract)
 
-> Status: **design closed, pending frontend sign-off** (branch
-> `feature/product-variant-slugs`, opened 2026-11-22). Nothing implemented yet
-> when this document was written; update the status as phases land.
+> Status: **Phases 1 & 2 implemented on branch `feature/product-variant-slugs`
+> (2026-11-22)** — backfill, unique partial index and `by-slug` endpoint verified
+> against the dev database. Pending: frontend sign-off of this contract, pairing
+> tests, and running `VariantSlugs1795384062113` on prod (procedure in
+> `07-runbook-baseline-prod.md`).
 > Source: frontend requisition (public product URLs by slug) + Fase-0 decisions
 > taken with the tech lead on 2026-11-22.
 

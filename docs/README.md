@@ -60,8 +60,9 @@
 
 Branch `Dev`. Feature set: catalog CRUD + product guides + manual sales + users domain
 (users, roles, persons, doc-types, addresses, locations with CSV bulk upload and boot seed).
-Migrations: baseline `BaseSchema1793650044833` (applied on dev and prod — 2026-03-10) plus
-`AddUsersSchema1793696002067` (applied on dev — 2026-11-03).
+Migrations: baseline `BaseSchema1793650044833` (applied on dev and prod — 2026-03-10),
+`AddUsersSchema1793696002067` (applied on dev — 2026-11-03), and
+`VariantSlugs1795384062113` (applied on dev — 2026-11-22, branch `feature/product-variant-slugs`).
 Actively scaffolded areas with commented-out code signal the next phase: authentication
 (`CustomAuthGuard`, `@Public()` decorator references in comments) and an abandoned
 `InlineProduct`/labels design (comments in entities/DTOs).

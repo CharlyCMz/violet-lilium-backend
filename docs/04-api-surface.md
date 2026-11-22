@@ -58,12 +58,16 @@ Note: there is **no** `GET /products` list, and no `PUT/DELETE` route for produc
 | GET | `/product-variants/top-sales` | Top 10 by `totalSales` |
 | GET | `/product-variants/most-popular` | Top 10 by `views` |
 | GET | `/product-variants/new-arrivals` | Top 10 newest |
+| GET | `/product-variants/by-slug/:variantSlug` | Public URL resolution (slug-only URLs): full product (category, subCategories, all variants) plus the matched variant as top-level `variant`. Only published products; increments `views`. 404 if missing, 409 if ambiguous. See `08-slug-design.md` |
 | GET | `/product-variants/:categoryId/related` | Top 5 by sales within a category |
 | GET | `/product-variants/:id` | One, with product/frontImage/attributes |
 | PUT | `/product-variants/:id` | Partial update; `stock` update auto-derives `isAvailable`; `attributeIds` replaces the attribute set |
 
+Every variant payload carries `variantSlug` and `attributes` sorted by the stable
+order (type rank → type → value → id) — see `08-slug-design.md`.
+
 ⚠️ **Route-order trap**: the static segments (`discount`, `top-sales`, `most-popular`,
-`new-arrivals`) must stay declared **before** `/:id` — Nest matches in declaration order.
+`new-arrivals`, `by-slug`) must stay declared **before** `/:id` — Nest matches in declaration order.
 `createEntity` is commented out; variants are created via `POST /products` or
 `/products/:id/new-variant`.
 
