@@ -34,6 +34,7 @@
 | Write new code that matches the codebase conventions | [05-design-patterns.md](05-design-patterns.md) |
 | Know the landmines before changing something | [06-gaps-risks-tech-debt.md](06-gaps-risks-tech-debt.md) |
 | Apply the production migration baseline / run migrations on prod | [07-runbook-baseline-prod.md](07-runbook-baseline-prod.md) |
+| Work on public variant URLs / slugs | [08-slug-design.md](08-slug-design.md) — design contract (branch `feature/product-variant-slugs`) |
 
 ## Mental model in 60 seconds
 
