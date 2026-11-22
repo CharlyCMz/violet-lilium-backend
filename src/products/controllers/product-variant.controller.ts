@@ -41,6 +41,12 @@ export class ProductVariantController {
     return this.productVariantService.newArrivals();
   }
 
+  @Get('by-slug/:variantSlug')
+  @Public()
+  getBySlug(@Param('variantSlug') variantSlug: string) {
+    return this.productVariantService.findBySlug(variantSlug);
+  }
+
   @Get(':id')
   @Public()
   getOneEntity(@Param('id') id: string) {

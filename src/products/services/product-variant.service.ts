@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, MoreThan, Repository } from 'typeorm';
@@ -147,6 +147,46 @@ export class ProductVariantService {
     });
     sortVariantAttributes(variants);
     return variants;
+  }
+
+  async findBySlug(variantSlug: string) {
+    const matches = await this.productVariantRepository.find({
+      where: { variantSlug, product: { status: ProductStatus.published } },
+      relations: [
+        'attributes',
+        'images',
+        'frontImage',
+        'product',
+        'product.category',
+        'product.subCategories',
+        'product.productVariants',
+        'product.productVariants.attributes',
+        'product.productVariants.images',
+        'product.productVariants.frontImage',
+      ],
+    });
+    if (matches.length === 0) {
+      throw new NotFoundException(
+        `The ProductVariant with slug: ${variantSlug} was Not Found`,
+      );
+    }
+    if (matches.length > 1) {
+      throw new ConflictException(
+        `The slug: ${variantSlug} matches more than one live ProductVariant`,
+      );
+    }
+
+    const variant = matches[0];
+    await this.productVariantRepository
+      .createQueryBuilder()
+      .update(ProductVariant)
+      .set({ views: () => '"views" + 1' })
+      .where('id = :id', { id: variant.id })
+      .execute();
+
+    sortVariantAttributes(variant);
+    sortVariantAttributes(variant.product.productVariants);
+    return { ...variant.product, variant };
   }
 
   async updateEntity(id: string, payload: UpdateProductVariantDTO) {
