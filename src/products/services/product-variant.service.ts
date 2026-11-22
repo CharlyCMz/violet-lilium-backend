@@ -11,6 +11,7 @@ import {
 } from '../dtos/product-variant.dto';
 import { ProductStatus } from '../entities/product.entity';
 import { Attribute } from '../entities/attribute.entity';
+import { sortVariantAttributes } from '../utils/variant-attributes';
 
 @Injectable()
 export class ProductVariantService {
@@ -37,7 +38,7 @@ export class ProductVariantService {
       .leftJoinAndSelect('pv.product', 'product')
       .leftJoin('product.category', 'category')
       .leftJoin('product.subCategories', 'subCategories')
-      .leftJoin('pv.attributes', 'attributes')
+      .leftJoinAndSelect('pv.attributes', 'attributes')
       .leftJoin('pv.images', 'images')
       .leftJoinAndSelect('pv.frontImage', 'frontImage')
       .distinct(true);
@@ -59,6 +60,7 @@ export class ProductVariantService {
     qb.skip((page - 1) * limit).take(limit);
 
     const [data, total] = await qb.getManyAndCount();
+    sortVariantAttributes(data);
 
     return {
       data,
@@ -72,7 +74,7 @@ export class ProductVariantService {
   }
 
   async findAllWithDiscount() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: {
         discountPrice: MoreThan('0'),
@@ -80,33 +82,41 @@ export class ProductVariantService {
       },
       order: { createdAt: 'DESC' },
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async topSales() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: { product: { status: ProductStatus.published } },
       order: { totalSales: 'DESC' },
       take: 10,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async mostPopular() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: { product: { status: ProductStatus.published } },
       order: { views: 'DESC' },
       take: 10,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async newArrivals() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: { product: { status: ProductStatus.published } },
       order: { createdAt: 'DESC' },
       take: 10,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async findOne(id: string) {
@@ -119,11 +129,12 @@ export class ProductVariantService {
         `The ProductVariant with ID: ${id} was Not Found`,
       );
     }
+    sortVariantAttributes(variant);
     return variant;
   }
 
   async relatedProducts(categoryId: string) {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: {
         product: {
@@ -134,6 +145,8 @@ export class ProductVariantService {
       order: { totalSales: 'DESC' },
       take: 5,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async updateEntity(id: string, payload: UpdateProductVariantDTO) {
@@ -151,7 +164,7 @@ export class ProductVariantService {
 
     if (payload.attributeIds && payload.attributeIds.length > 0) {
       const attributes = await this.attributeRepository.findBy({
-        id: In(payload.attributeIds as string[]),
+        id: In(payload.attributeIds),
       });
       if (attributes.length !== payload.attributeIds.length) {
         throw new NotFoundException(`One or more variant attributes not found`);
