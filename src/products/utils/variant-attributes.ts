@@ -4,7 +4,12 @@ import { ProductVariant } from '../entities/product-variant.entity';
 // Pin merchandising order here (listed types first); empty = alphabetical.
 export const ATTRIBUTE_TYPE_ORDER: string[] = [];
 
-export function compareAttributes(a: Attribute, b: Attribute): number {
+export type SortableAttribute = Pick<Attribute, 'id' | 'type' | 'value'>;
+
+export function compareAttributes(
+  a: SortableAttribute,
+  b: SortableAttribute,
+): number {
   const rankOf = (type: string) => {
     const index = ATTRIBUTE_TYPE_ORDER.indexOf(type);
     return index === -1 ? ATTRIBUTE_TYPE_ORDER.length : index;
