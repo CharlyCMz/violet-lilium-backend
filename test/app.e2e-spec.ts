@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
@@ -16,10 +16,15 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('GET / rejects unauthenticated requests with 401', () => {
+    return request(app.getHttpServer()).get('/').expect(401);
+  });
+
+  it('GET /product-variants is a public route and returns 200', () => {
+    return request(app.getHttpServer()).get('/product-variants').expect(200);
   });
 });

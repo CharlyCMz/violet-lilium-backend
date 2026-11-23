@@ -7,9 +7,13 @@ import { SubCategory } from '../entities/sub-category.entity';
 import { Category } from '../entities/category.entity';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { Image } from '../entities/image.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { Attribute } from '../entities/attribute.entity';
 import { CreateProductVariantDTO } from '../dtos/product-variant.dto';
+import {
+  generateVariantSlugBase,
+  nextSlugCandidate,
+} from '../../utils/slug/slug.utils';
 
 @Injectable()
 export class ProductService {
@@ -75,7 +79,7 @@ export class ProductService {
 
           if (pv.attributeIds?.length > 0) {
             const attributes = await manager.findBy(Attribute, {
-              id: In(pv.attributeIds as string[]),
+              id: In(pv.attributeIds),
             });
             if (attributes.length !== pv.attributeIds.length) {
               throw new NotFoundException(
@@ -83,8 +87,14 @@ export class ProductService {
               );
             }
             variant.attributes = attributes;
-            await manager.save(ProductVariant, variant);
           }
+
+          variant.variantSlug = await this.resolveVariantSlug(
+            manager,
+            variant,
+            product.brand,
+          );
+          await manager.save(ProductVariant, variant);
 
           if (pv.images?.length > 0) {
             const images = pv.images.map((img) =>
@@ -119,7 +129,7 @@ export class ProductService {
 
   async updateEntity(id: string, payload: UpdateProductDTO) {
     return await this.dataSource.transaction(async (manager) => {
-      let product = await manager.findOne(Product, { where: { id } });
+      const product = await manager.findOne(Product, { where: { id } });
       if (!product) {
         throw new NotFoundException(`Product with ID "${id}" not found`);
       }
@@ -180,7 +190,7 @@ export class ProductService {
 
       if (payload.attributeIds?.length > 0) {
         const attributes = await manager.findBy(Attribute, {
-          id: In(payload.attributeIds as string[]),
+          id: In(payload.attributeIds),
         });
         if (attributes.length !== payload.attributeIds.length) {
           throw new NotFoundException(
@@ -188,8 +198,14 @@ export class ProductService {
           );
         }
         variant.attributes = attributes;
-        await manager.save(ProductVariant, variant);
       }
+
+      variant.variantSlug = await this.resolveVariantSlug(
+        manager,
+        variant,
+        product.brand,
+      );
+      await manager.save(ProductVariant, variant);
 
       if (payload.images?.length > 0) {
         const images = payload.images.map((img) =>
@@ -204,6 +220,25 @@ export class ProductService {
       }
       return variant;
     });
+  }
+
+  private async resolveVariantSlug(
+    manager: EntityManager,
+    variant: ProductVariant,
+    brand: string,
+  ): Promise<string> {
+    const base = generateVariantSlugBase(
+      variant.name,
+      brand,
+      variant.attributes ?? [],
+    );
+    let attempt = 1;
+    let candidate = nextSlugCandidate(base, attempt);
+    while (await manager.existsBy(ProductVariant, { variantSlug: candidate })) {
+      attempt += 1;
+      candidate = nextSlugCandidate(base, attempt);
+    }
+    return candidate;
   }
 
   async softDelete(id: string) {

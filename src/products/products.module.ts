@@ -31,7 +31,7 @@ import { ImageController } from './controllers/image.controller';
       ProductVariant,
       Product,
       SubCategory,
-      ProductGuide
+      ProductGuide,
     ]),
   ],
   providers: [

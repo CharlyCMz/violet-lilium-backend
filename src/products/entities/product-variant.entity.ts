@@ -23,6 +23,9 @@ export class ProductVariant {
   @Column({ type: 'varchar', length: 256, unique: true })
   sku: string;
 
+  @Column({ type: 'varchar', name: 'variant_slug', nullable: false })
+  variantSlug: string;
+
   @Column({ type: 'varchar', name: 'name', nullable: false })
   name: string;
 
@@ -53,10 +56,7 @@ export class ProductVariant {
   @Column({ type: 'int', name: 'total_sales', default: 0 })
   totalSales: number;
 
-  @ManyToMany(
-    () => Attribute,
-    (attribute) => attribute.productVariants,
-  )
+  @ManyToMany(() => Attribute, (attribute) => attribute.productVariants)
   @JoinTable({ name: 'product_variants_attributes' })
   attributes: Attribute[];
 
