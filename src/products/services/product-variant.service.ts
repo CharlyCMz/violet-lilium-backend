@@ -1,9 +1,12 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, MoreThan, Repository } from 'typeorm';
 import {
-  CreateProductVariantDTO,
   GetProductVariantFiltersDTO,
   Sort,
   SortBy,

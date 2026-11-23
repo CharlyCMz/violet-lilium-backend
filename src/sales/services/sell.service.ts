@@ -4,14 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProductVariant } from 'src/products/entities/product-variant.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { ManualSellDTO } from '../dtos/manual-sell.dto';
 
 @Injectable()
 export class SellService {
-  constructor(
-    private dataSource: DataSource,
-  ) {}
+  constructor(private dataSource: DataSource) {}
 
   async manualSell(payload: ManualSellDTO[]) {
     return this.dataSource.transaction(async (manager) => {
