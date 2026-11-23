@@ -5,6 +5,20 @@
 > Ejecutar una sola vez por ambiente existente. Ambientes nuevos y vacíos no usan este
 > runbook: ahí basta con `npm run migration:run`.
 
+## Migraciones posteriores que SÍ tocan data (ej. `VariantSlugs1795384062113`)
+
+El baseline fue el único caso "schema-only". Cualquier migración futura que altere
+tablas con datos — como `VariantSlugs1795384062113` (columna `variant_slug` + backfill
+del catálogo existente, branch `feature/product-variant-slugs`) — sigue un procedimiento
+más simple que este runbook, pero con respaldo previo obligatorio:
+
+1. `pg_dump` de la base de prod (como el Paso 1).
+2. Desplegar el código y correr `npm run migration:run`.
+3. Verificar: sin slugs vacíos, sin duplicados entre filas vivas, índice presente.
+   Revisar ojo humano una muestra de slugs generados antes de anunciar a frontend.
+4. Antes del backfill en prod, limpiar marcas con casing/duplicados en el catálogo
+   para evitar un bosque de sufijos `-2` (ver `08-slug-design.md`).
+
 ## Por qué esto no toca la data
 
 - La migración baseline contiene los `CREATE TABLE` del schema completo, pero **solo se

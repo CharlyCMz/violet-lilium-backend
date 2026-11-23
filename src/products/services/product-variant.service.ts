@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, MoreThan, Repository } from 'typeorm';
@@ -10,6 +14,7 @@ import {
 } from '../dtos/product-variant.dto';
 import { ProductStatus } from '../entities/product.entity';
 import { Attribute } from '../entities/attribute.entity';
+import { sortVariantAttributes } from '../utils/variant-attributes';
 
 @Injectable()
 export class ProductVariantService {
@@ -36,7 +41,7 @@ export class ProductVariantService {
       .leftJoinAndSelect('pv.product', 'product')
       .leftJoin('product.category', 'category')
       .leftJoin('product.subCategories', 'subCategories')
-      .leftJoin('pv.attributes', 'attributes')
+      .leftJoinAndSelect('pv.attributes', 'attributes')
       .leftJoin('pv.images', 'images')
       .leftJoinAndSelect('pv.frontImage', 'frontImage')
       .distinct(true);
@@ -58,6 +63,7 @@ export class ProductVariantService {
     qb.skip((page - 1) * limit).take(limit);
 
     const [data, total] = await qb.getManyAndCount();
+    sortVariantAttributes(data);
 
     return {
       data,
@@ -71,7 +77,7 @@ export class ProductVariantService {
   }
 
   async findAllWithDiscount() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: {
         discountPrice: MoreThan('0'),
@@ -79,33 +85,41 @@ export class ProductVariantService {
       },
       order: { createdAt: 'DESC' },
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async topSales() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: { product: { status: ProductStatus.published } },
       order: { totalSales: 'DESC' },
       take: 10,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async mostPopular() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: { product: { status: ProductStatus.published } },
       order: { views: 'DESC' },
       take: 10,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async newArrivals() {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: { product: { status: ProductStatus.published } },
       order: { createdAt: 'DESC' },
       take: 10,
     });
+    sortVariantAttributes(variants);
+    return variants;
   }
 
   async findOne(id: string) {
@@ -118,11 +132,12 @@ export class ProductVariantService {
         `The ProductVariant with ID: ${id} was Not Found`,
       );
     }
+    sortVariantAttributes(variant);
     return variant;
   }
 
   async relatedProducts(categoryId: string) {
-    return await this.productVariantRepository.find({
+    const variants = await this.productVariantRepository.find({
       relations: ['product', 'frontImage', 'attributes'],
       where: {
         product: {
@@ -133,6 +148,48 @@ export class ProductVariantService {
       order: { totalSales: 'DESC' },
       take: 5,
     });
+    sortVariantAttributes(variants);
+    return variants;
+  }
+
+  async findBySlug(variantSlug: string) {
+    const matches = await this.productVariantRepository.find({
+      where: { variantSlug, product: { status: ProductStatus.published } },
+      relations: [
+        'attributes',
+        'images',
+        'frontImage',
+        'product',
+        'product.category',
+        'product.subCategories',
+        'product.productVariants',
+        'product.productVariants.attributes',
+        'product.productVariants.images',
+        'product.productVariants.frontImage',
+      ],
+    });
+    if (matches.length === 0) {
+      throw new NotFoundException(
+        `The ProductVariant with slug: ${variantSlug} was Not Found`,
+      );
+    }
+    if (matches.length > 1) {
+      throw new ConflictException(
+        `The slug: ${variantSlug} matches more than one live ProductVariant`,
+      );
+    }
+
+    const variant = matches[0];
+    await this.productVariantRepository
+      .createQueryBuilder()
+      .update(ProductVariant)
+      .set({ views: () => '"views" + 1' })
+      .where('id = :id', { id: variant.id })
+      .execute();
+
+    sortVariantAttributes(variant);
+    sortVariantAttributes(variant.product.productVariants);
+    return { ...variant.product, variant };
   }
 
   async updateEntity(id: string, payload: UpdateProductVariantDTO) {

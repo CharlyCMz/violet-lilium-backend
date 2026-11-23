@@ -114,8 +114,10 @@ before touching the related area. Last updated 2026-11-23.
 8. **Timestamp type mismatch**: `Product` uses `timestamp`, every other entity `timestamptz`.
 9. **Quasi-polymorphic `Image`**: two nullable owning FKs (`productVariant`, `productGuide`)
    plus being the target of `frontImage`. No constraint enforces "exactly one parent".
-10. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
-    (`src/products/services/product.service.ts:32`) — crawlers/refreshes pollute popularity.
+10. **Side-effecting GETs**: `GET /products/:id/variant/:variantId` increments `views`
+    (`src/products/services/product.service.ts:32`), and so does
+    `GET /product-variants/by-slug/:variantSlug` (deliberate, branch
+    `feature/product-variant-slugs`) — crawlers/refreshes pollute popularity.
 11. **Typo'd filename**: `attibute.controller.ts` (the mixed line endings were fixed 2026-11-23 — repo is LF + `.gitattributes`).
 12. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
     Angular app.

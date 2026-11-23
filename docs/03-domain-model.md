@@ -76,6 +76,7 @@ The sellable unit (has SKU, price, stock). This is what the storefront actually 
 |---|---|---|
 | id | uuid PK | |
 | sku | varchar(256), **unique** | lookup key in the manual-sell flow |
+| variant_slug | varchar, **unique partial** (`WHERE deleted_at IS NULL`) | canonical public URL token; `slugify(name + brand + attribute values in stable order)`, generated on write and frozen afterwards. See `08-slug-design.md` |
 | name / description | varchar / text | required |
 | specifications | text[], nullable | |
 | cost | numeric(12,4) | string in TS |

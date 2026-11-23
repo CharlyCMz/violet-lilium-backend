@@ -34,6 +34,7 @@
 | Write new code that matches the codebase conventions | [05-design-patterns.md](05-design-patterns.md) |
 | Know the landmines before changing something | [06-gaps-risks-tech-debt.md](06-gaps-risks-tech-debt.md) |
 | Apply the production migration baseline / run migrations on prod | [07-runbook-baseline-prod.md](07-runbook-baseline-prod.md) |
+| Work on public variant URLs / slugs | [08-slug-design.md](08-slug-design.md) — design contract (branch `feature/product-variant-slugs`) |
 
 ## Mental model in 60 seconds
 
@@ -59,8 +60,9 @@
 
 Branch `Dev`. Feature set: catalog CRUD + product guides + manual sales + users domain
 (users, roles, persons, doc-types, addresses, locations with CSV bulk upload and boot seed).
-Migrations: baseline `BaseSchema1793650044833` (applied on dev and prod — 2026-03-10) plus
-`AddUsersSchema1793696002067` (applied on dev — 2026-11-03).
+Migrations: baseline `BaseSchema1793650044833` (applied on dev and prod — 2026-03-10),
+`AddUsersSchema1793696002067` (applied on dev — 2026-11-03), and
+`VariantSlugs1795384062113` (applied on dev — 2026-11-22, branch `feature/product-variant-slugs`).
 Actively scaffolded areas with commented-out code signal the next phase: authentication
 (`CustomAuthGuard`, `@Public()` decorator references in comments) and an abandoned
 `InlineProduct`/labels design (comments in entities/DTOs).

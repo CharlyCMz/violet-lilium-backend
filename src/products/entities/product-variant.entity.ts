@@ -23,6 +23,9 @@ export class ProductVariant {
   @Column({ type: 'varchar', length: 256, unique: true })
   sku: string;
 
+  @Column({ type: 'varchar', name: 'variant_slug', nullable: false })
+  variantSlug: string;
+
   @Column({ type: 'varchar', name: 'name', nullable: false })
   name: string;
 
