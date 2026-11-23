@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProductVariant } from '../entities/product-variant.entity';
 import { In, MoreThan, Repository } from 'typeorm';
 import {
-  CreateProductVariantDTO,
   GetProductVariantFiltersDTO,
   Sort,
   SortBy,
@@ -151,7 +150,7 @@ export class ProductVariantService {
 
     if (payload.attributeIds && payload.attributeIds.length > 0) {
       const attributes = await this.attributeRepository.findBy({
-        id: In(payload.attributeIds as string[]),
+        id: In(payload.attributeIds),
       });
       if (attributes.length !== payload.attributeIds.length) {
         throw new NotFoundException(`One or more variant attributes not found`);

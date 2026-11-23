@@ -18,7 +18,7 @@
 | API docs | Swagger UI at `/docs` |
 | Config | Single YAML file (`config.yml`, repo root), loaded via `@nestjs/config` custom loader |
 | Auth | **Implemented (Phase 2, 2026-11-03).** JWT login `POST /auth` → `{accessToken, user}`; global guard chain (`@Public()` seam + `@Roles('Admin')` RBAC); catalog GETs public, writes admin-only |
-| Tests | Jest 30 (ts-jest); e2e with supertest. Effectively only boilerplate tests exist |
+| Tests | Jest 30 (ts-jest); e2e with supertest. Suite passes (unit + smoke e2e); real coverage still minimal |
 | Frontend consumer | Angular SPA (`localhost:4200` dev; `violetlilium.com` prod) via CORS allowlist |
 | Environments | Local dev: Docker Postgres on the dev machine. Production: DigitalOcean droplet with domain |
 

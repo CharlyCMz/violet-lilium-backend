@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProductGuide } from '../entities/product-guide.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
@@ -20,14 +24,14 @@ export class ProductGuideService {
 
   async findAll() {
     return await this.productGuideRepository.find({
-      relations: ['images']
+      relations: ['images'],
     });
   }
 
   async findOne(id: string) {
     const productGuide = await this.productGuideRepository.findOne({
       where: { id },
-      relations: ['images']
+      relations: ['images'],
     });
 
     if (!productGuide) {
@@ -79,7 +83,8 @@ export class ProductGuideService {
       productGuide.images = images;
     }
 
-    const { imageIds, ...rest } = payload;
+    const rest = { ...payload };
+    delete rest.imageIds;
     this.productGuideRepository.merge(productGuide, rest);
 
     return await this.productGuideRepository.save(productGuide);

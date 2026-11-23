@@ -4,6 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { CreateCategoryDTO, UpdateCategoryDTO } from '../dtos/category.dto';
 
+interface FeaturedCategorySummary {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  totalSales: string;
+}
+
 @Injectable()
 export class CategoryService {
   constructor(
@@ -34,7 +42,7 @@ export class CategoryService {
       .addGroupBy('category.imageUrl')
       .orderBy('"totalSales"', 'DESC')
       .limit(5)
-      .getRawMany();
+      .getRawMany<FeaturedCategorySummary>();
   }
 
   async findByName(filter: string) {

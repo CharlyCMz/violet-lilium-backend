@@ -23,8 +23,8 @@ export class ImagesService {
 
   async findGroup(ids: string[]) {
     return await this.imageRepository.find({
-    where: { id: In(ids) }
-  });
+      where: { id: In(ids) },
+    });
   }
 
   async findByProductVariantId(productVariantId: string) {
@@ -63,7 +63,7 @@ export class ImagesService {
   }
 
   async updateEntity(id: string, payload: UpdateImageDTO) {
-    let image = await this.imageRepository.findOne({
+    const image = await this.imageRepository.findOne({
       where: { id },
     });
     if (!image) {

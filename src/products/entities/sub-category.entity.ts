@@ -5,7 +5,6 @@ import {
   Entity,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,7 +19,7 @@ export class SubCategory {
   @Column({ type: 'varchar', length: 156, unique: true })
   title: string;
 
-  @Column({ type: 'text', nullable: true})
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @Column({ type: 'varchar', name: 'image_url', nullable: true })

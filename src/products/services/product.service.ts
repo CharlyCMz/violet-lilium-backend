@@ -75,7 +75,7 @@ export class ProductService {
 
           if (pv.attributeIds?.length > 0) {
             const attributes = await manager.findBy(Attribute, {
-              id: In(pv.attributeIds as string[]),
+              id: In(pv.attributeIds),
             });
             if (attributes.length !== pv.attributeIds.length) {
               throw new NotFoundException(
@@ -119,7 +119,7 @@ export class ProductService {
 
   async updateEntity(id: string, payload: UpdateProductDTO) {
     return await this.dataSource.transaction(async (manager) => {
-      let product = await manager.findOne(Product, { where: { id } });
+      const product = await manager.findOne(Product, { where: { id } });
       if (!product) {
         throw new NotFoundException(`Product with ID "${id}" not found`);
       }
@@ -180,7 +180,7 @@ export class ProductService {
 
       if (payload.attributeIds?.length > 0) {
         const attributes = await manager.findBy(Attribute, {
-          id: In(payload.attributeIds as string[]),
+          id: In(payload.attributeIds),
         });
         if (attributes.length !== payload.attributeIds.length) {
           throw new NotFoundException(

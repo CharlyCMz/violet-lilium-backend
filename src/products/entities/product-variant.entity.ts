@@ -53,10 +53,7 @@ export class ProductVariant {
   @Column({ type: 'int', name: 'total_sales', default: 0 })
   totalSales: number;
 
-  @ManyToMany(
-    () => Attribute,
-    (attribute) => attribute.productVariants,
-  )
+  @ManyToMany(() => Attribute, (attribute) => attribute.productVariants)
   @JoinTable({ name: 'product_variants_attributes' })
   attributes: Attribute[];
 

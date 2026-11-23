@@ -2,9 +2,25 @@
 
 Verified findings from the full scan (2026-01-25), ordered roughly by blast radius. Each entry
 says what it is, where it lives, and why it matters. Treat this as the pre-flight checklist
-before touching the related area. Last updated 2026-11-13.
+before touching the related area. Last updated 2026-11-23.
 
 ## Resolved
+
+**2026-11-23 — zero-error lint, unified LF, working test suite (branch `Dev`):**
+- **`npm run lint` exits clean.** Removed unused imports/vars (`banner.dto`,
+  `attribute.entity`, `sub-category.entity`, `product-variant.service`,
+  `sell.service`, dead `imageIds` in `product-guide.service`), typed the raw-query
+  return in `CategoryService.featuredCategories`, fixed the supertest import in
+  the e2e spec.
+- **Line endings unified to LF** repo-wide (was: `src/sales/*` CRLF, rest LF) +
+  root `.gitattributes` (`* text=auto eol=lf`) so `eslint --fix` stops producing
+  repo-wide EOL noise on every run.
+- **Test suite passes out of the box** (the old stale-specs item is closed): stale
+  `'Hello World!'` assertions replaced with real behavior — unit covers the welcome
+  message; e2e covers 401 on guarded `GET /`, 200 on public `GET /product-variants`,
+  and `app.close()` so Jest exits cleanly. Jest configs gained `moduleNameMapper`
+  (33 `src/*` absolute imports were unresolvable in ts-jest) and
+  `transformIgnorePatterns` (`@nestjs/jwt`/`@nestjs/passport` are ESM-only in v11).
 
 **2026-11-13 — friendly conflicts + nested validation (branch `Dev`):**
 - **Unique violations → 409.** Global `TypeormExceptionFilter` (`APP_FILTER` in
@@ -81,12 +97,6 @@ before touching the related area. Last updated 2026-11-13.
 2. **No hardening middleware.** No helmet, no rate limiting. CORS is properly allowlisted but
    that's the only defense.
 
-## Bugs & test debt
-
-4. **Stale tests**: both spec files still assert `'Hello World!'` while the service returns
-   the Spanish greeting — `npm test` and `test:e2e` fail out of the box. There is effectively
-   **zero real test coverage**.
-
 ## Dead / orphaned code (don't resurrect blindly)
 
 5. **Unwired service methods**: `ProductService.updateEntity` and `ProductService.softDelete`
@@ -106,8 +116,7 @@ before touching the related area. Last updated 2026-11-13.
    plus being the target of `frontImage`. No constraint enforces "exactly one parent".
 10. **Side-effecting GET**: `GET /products/:id/variant/:variantId` increments `views`
     (`src/products/services/product.service.ts:32`) — crawlers/refreshes pollute popularity.
-11. **Mixed line endings**: `src/sales/*` is CRLF, the rest LF. Also a typo'd filename:
-    `attibute.controller.ts`.
+11. **Typo'd filename**: `attibute.controller.ts` (the mixed line endings were fixed 2026-11-23 — repo is LF + `.gitattributes`).
 12. **No API prefix/versioning** — any future versioning will be a breaking URL change for the
     Angular app.
 13. **`persons.document` is `varchar(10)`** — fits Colombian CC/NIT digits, but passports and
